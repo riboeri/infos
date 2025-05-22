@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagina Iniziale</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #F7FFF7; /* Light Mint from the Energetic & Playful palette */
+            color: #1A535C; /* Dark Teal from the Energetic & Playful palette */
+        }
+        .container {
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+        .link-button {
+            display: inline-block;
+            background-color: #FF6B6B; /* Coral Red from the Energetic & Playful palette */
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        .link-button:hover {
+            background-color: #E05252; /* Slightly darker Coral Red on hover */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-bold mb-6">Benvenuto!</h1>
+        <p class="text-lg mb-8">Clicca sul pulsante qui sotto per accedere all'infografica sulla Sindrome Demenza.</p>
+        <a href="demenza.htm" class="link-button">Vai all'Infografica Demenza</a>
+    </div>
+</body>
+</html>
