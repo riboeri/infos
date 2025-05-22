@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infografica: Sindrome Demenza - Diagnosi e Trattamento</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px; /* Default max-width, can be overridden by Tailwind */
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px; /* Base height */
+            max-height: 400px; /* Max height */
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px; /* Taller on medium screens and up */
+            }
+        }
+        .stat-card {
+            background-color: #fff;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2.25rem; /* text-4xl */
+            font-weight: 700; /* bold */
+        }
+        .stat-label {
+            font-size: 0.875rem; /* text-sm */
+            color: #4A5568; /* text-gray-700 */
+            margin-top: 0.5rem;
+        }
+        .flowchart-step {
+            border: 2px solid; /* Color will be set by palette */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            background-color: white;
+        }
+        .flowchart-arrow {
+            font-size: 1.5rem; /* text-2xl */
+            text-align: center;
+            margin-bottom: 1rem;
+            color: #4A5568; /* text-gray-700 */
+        }
+        /* Palette: Energetic & Playful (Example - will use specific hex codes)
+           Primary: #FF6B6B (Coral Red)
+           Secondary: #4ECDC4 (Turquoise)
+           Accent: #FFE66D (Pastel Yellow)
+           Background: #F7FFF7 (Very Light Mint)
+           Text: #1A535C (Dark Teal)
+        */
+        .bg-primary-light { background-color: #F7FFF7; } /* Very Light Mint */
+        .text-primary-dark { color: #1A535C; } /* Dark Teal */
+        .border-primary { border-color: #FF6B6B; } /* Coral Red */
+        .bg-primary-accent { background-color: #FF6B6B; } /* Coral Red */
+        .text-primary-accent { color: #FF6B6B; } /* Coral Red */
+        .bg-secondary-accent { background-color: #4ECDC4; } /* Turquoise */
+        .text-secondary-accent { color: #4ECDC4; } /* Turquoise */
+        .highlight-accent { color: #FFE66D; } /* Pastel Yellow for specific highlights if needed */
+
+        nav a {
+            transition: color 0.3s ease;
+        }
+        nav a:hover {
+            color: #FF6B6B; /* Coral Red on hover */
+        }
+    </style>
+</head>
+<body class="bg-primary-light text-primary-dark">
+
+    <!-- 
+        Infographic Plan Summary:
+        1. Introduzione: Cos'è la Demenza e Impatto (Testo, Statistiche chiave)
+        2. Epidemiologia: Prevalenza e Incidenza (Bar Chart per età/genere)
+        3. Fattori di Rischio e Prevenzione: (Lista/Icone HTML per 7 fattori, testo esplicativo)
+        4. Il Percorso Diagnostico: (Flowchart HTML/CSS per fasi, testo per strumenti)
+        5. Approcci Terapeutici: (Donut chart per tipi di intervento, testo per farmaci/TNF)
+        6. Pianificazione dell'Assistenza: (Lista/Processo HTML/CSS, testo sull'importanza)
+        7. Conclusioni: (Testo riassuntivo)
+        8. Nuova Sezione: Spiegazione Sintomi con LLM (Input testuale, output LLM)
+
+        Visualization Choices:
+        - Prevalenza/Incidenza: Goal: Compare. Chart.js Bar Chart. Justification: Ottimo per confrontare valori tra categorie (età/genere). NO SVG.
+        - Fattori di Rischio: Goal: Inform/Organize. HTML List/Styled Divs. Justification: Chiaro e diretto per elencare fattori. NO SVG.
+        - Percorso Diagnostico: Goal: Organize. HTML/CSS Flowchart. Justification: Visualizza un processo sequenziale. NO SVG, NO MERMAID JS.
+        - Approcci Terapeutici: Goal: Compare/Inform. Chart.js Donut Chart (per proporzione farmaco/non-farmaco) o Bar Chart (per tipi). Justification: Buono per mostrare parti di un tutto o confronto. NO SVG.
+        - Pianificazione Assistenza: Goal: Organize. HTML List/Styled Divs. Justification: Struttura chiara per passaggi o componenti. NO SVG.
+        - Spiegazione Sintomi: Goal: Inform. LLM-powered text generation. Justification: Provides on-demand, concise explanations of medical terms.
+
+        Chosen Color Palette: "Energetic & Playful"
+        Primary: #FF6B6B (Coral Red)
+        Secondary: #4ECDC4 (Turquoise)
+        Accent: #FFE66D (Pastel Yellow)
+        Background: #F7FFF7 (Very Light Mint)
+        Text: #1A535C (Dark Teal)
+        Chart Colors: #FF6B6B, #4ECDC4, #45B7D1, #FFA07A, #FFD700
+
+        Confirmation: NEITHER Mermaid JS NOR SVG were used anywhere in this output. All charts are Chart.js (Canvas). Diagrams are HTML/CSS.
+    -->
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-primary-accent">Focus Demenza</h1>
+            <div class="space-x-4">
+                <a href="#epidemiologia" class="text-primary-dark hover:text-primary-accent">Epidemiologia</a>
+                <a href="#diagnosi" class="text-primary-dark hover:text-primary-accent">Diagnosi</a>
+                <a href="#trattamento" class="text-primary-dark hover:text-primary-accent">Trattamento</a>
+                <a href="#assistenza" class="text-primary-dark hover:text-primary-accent">Assistenza</a>
+                <a href="#spiegazione-sintomi" class="text-primary-dark hover:text-primary-accent">Sintomi ✨</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-8">
+
+        <section id="introduzione" class="mb-12 text-center">
+            <h2 class="text-4xl font-bold mb-4 text-primary-accent">Comprendere la Sindrome Demenziale</h2>
+            <p class="text-lg mb-6 max-w-3xl mx-auto">
+                La demenza è una sindrome progressiva che implica un deterioramento delle funzioni cognitive superiore a quello atteso dal normale invecchiamento. Impatta memoria, pensiero, orientamento, comprensione, calcolo, capacità di apprendimento, linguaggio e giudizio, influenzando profondamente la vita quotidiana degli individui e delle loro famiglie. Queste linee guida della Regione Toscana mirano a fornire un quadro aggiornato per la diagnosi e il trattamento.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                <div class="stat-card border-t-4 border-primary">
+                    <div class="stat-value text-primary-accent">1-5%</div>
+                    <div class="stat-label">Popolazione >65 anni colpita</div>
+                </div>
+                <div class="stat-card border-t-4 border-secondary-accent">
+                    <div class="stat-value text-secondary-accent">7-10</div>
+                    <div class="stat-label">Anni di sopravvivenza mediana dalla diagnosi (range 3.3-11.7)</div>
+                </div>
+                <div class="stat-card border-t-4 border-yellow-500">
+                    <div class="stat-value text-yellow-600">Cruciale</div>
+                    <div class="stat-label">Diagnosi e presa in carico tempestive</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="epidemiologia" class="mb-12 py-8 bg-white rounded-lg shadow-xl p-6">
+            <h2 class="text-3xl font-bold mb-6 text-center text-primary-accent">Epidemiologia della Demenza</h2>
+            <p class="text-md mb-6 text-center max-w-2xl mx-auto">
+                L'incidenza e la prevalenza della demenza aumentano significativamente con l'età. Comprendere questi dati è fondamentale per la pianificazione sanitaria e l'allocazione delle risorse. Sebbene le proiezioni future siano complesse, la tendenza all'invecchiamento della popolazione sottolinea l'urgenza di strategie efficaci.
+            </p>
+            <div class="chart-container mx-auto h-96 md:h-[500px]">
+                <canvas id="epidemiologiaChart"></canvas>
+            </div>
+            <p class="text-sm text-center mt-4 text-gray-600">Fonte: Adattato da Tabella 1, SNLG Regione Toscana 2015 (pagina 9 del PDF).</p>
+        </section>
+
+        <section id="prevenzione" class="mb-12 py-8">
+            <h2 class="text-3xl font-bold mb-6 text-center text-primary-accent">Fattori di Rischio e Prevenzione</h2>
+            <p class="text-md mb-8 text-center max-w-2xl mx-auto">
+                Numerosi studi indicano che alcuni fattori di rischio per la demenza sono modificabili. Intervenire su questi fattori può giocare un ruolo chiave nel ritardare o prevenire l'insorgenza della malattia. La prevenzione è un elemento cardine, data l'assenza di terapie risolutive.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold mb-2 text-secondary-accent">Fattori di Rischio Modificabili:</h3>
+                    <ul class="list-disc list-inside space-y-1 text-primary-dark">
+                        <li>Diabete</li>
+                        <li>Ipertensione in età adulta</li>
+                        <li>Obesità in età adulta</li>
+                        <li>Fumo</li>
+                        <li>Depressione</li>
+                        <li>Bassa scolarizzazione</li>
+                        <li>Inattività fisica</li>
+                    </ul>
+                    <p class="mt-3 text-sm text-gray-600">Fonte: SNLG Regione Toscana 2015 (pagina 12 del PDF).</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg md:col-span-1 lg:col-span-2">
+                    <h3 class="text-xl font-semibold mb-2 text-secondary-accent">Strategie Preventive Chiave:</h3>
+                    <p class="mb-2 text-primary-dark">La ricerca si concentra su interventi multimodali:</p>
+                    <ul class="list-disc list-inside space-y-1 text-primary-dark">
+                        <li><strong>Attività fisica regolare:</strong> Include esercizi per l'equilibrio.</li>
+                        <li><strong>Educazione alimentare:</strong> Promozione di una dieta sana.</li>
+                        <li><strong>Training cognitivo:</strong> Attività per stimolare le funzioni mentali.</li>
+                        <li><strong>Impegno sociale:</strong> Mantenere relazioni e attività sociali.</li>
+                        <li><strong>Controllo dei fattori vascolari:</strong> Gestione di ipertensione, diabete, colesterolo.</li>
+                    </ul>
+                    <p class="mt-3 text-sm text-primary-dark">Un alto livello d'istruzione e un'elevata complessità occupazionale sono associati a un rischio ridotto, sottolineando il ruolo della <strong class="text-secondary-accent">riserva cognitiva</strong>.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="diagnosi" class="mb-12 py-8 bg-white rounded-lg shadow-xl p-6">
+            <h2 class="text-3xl font-bold mb-8 text-center text-primary-accent">Il Percorso Diagnostico</h2>
+            <p class="text-md mb-8 text-center max-w-2xl mx-auto">
+                Una diagnosi tempestiva è fondamentale per una gestione ottimale della demenza. Il percorso diagnostico coinvolge il Medico di Medicina Generale (MMG) e, se necessario, strutture specialistiche. È importante distinguere la demenza da altre condizioni come il delirium o la depressione.
+            </p>
+            <div class="max-w-3xl mx-auto">
+                <div class="flowchart-step border-primary">
+                    <h4 class="font-semibold text-lg text-primary-accent">1. Sospetto Diagnostico</h4>
+                    <p>Segnalazione del paziente o dei familiari di alterazioni cognitive/comportamentali. Ruolo chiave del MMG.</p>
+                </div>
+                <div class="flowchart-arrow text-primary-accent">▼</div>
+                <div class="flowchart-step border-secondary-accent">
+                    <h4 class="font-semibold text-lg text-secondary-accent">2. Valutazione Iniziale (MMG)</h4>
+                    <p>Anamnesi, esame obiettivo, valutazione cognitiva (es. Mini-Cog Test), valutazione depressione (es. Geriatric Depression Scale).</p>
+                </div>
+                <div class="flowchart-arrow text-secondary-accent">▼</div>
+                <div class="flowchart-step border-yellow-500">
+                    <h4 class="font-semibold text-lg text-yellow-600">3. Esami di Base</h4>
+                    <p>Esami ematochimici (emocromo, glicemia, TSH, Vit. B12, folati, etc.) per escludere cause reversibili.</p>
+                </div>
+                <div class="flowchart-arrow text-yellow-600">▼</div>
+                <div class="flowchart-step border-primary">
+                    <h4 class="font-semibold text-lg text-primary-accent">4. Neuroimaging Strutturale</h4>
+                    <p>Risonanza Magnetica (RMN) cerebrale raccomandata per definizione diagnostica.</p>
+                </div>
+                <div class="flowchart-arrow text-primary-accent">▼</div>
+                <div class="flowchart-step border-secondary-accent">
+                    <h4 class="font-semibold text-lg text-secondary-accent">5. Eventuale Ricorso a Centri Specialistici</h4>
+                    <p>Per diagnosi differenziale, casi complessi, forme ad esordio precoce, ricerca cause trattabili. Possibile uso di biomarcatori (PET, liquor) in casi selezionati.</p>
+                </div>
+                <div class="flowchart-arrow text-secondary-accent">▼</div>
+                <div class="flowchart-step border-green-500">
+                    <h4 class="font-semibold text-lg text-green-600">6. Definizione Diagnostica e Piano Terapeutico</h4>
+                    <p>Identificazione del tipo di demenza e pianificazione del trattamento.</p>
+                </div>
+            </div>
+             <p class="text-sm text-center mt-6 text-gray-600">Fonte: Adattato da sezioni "Diagnosi", SNLG Regione Toscana 2015 (pagine 14-25 del PDF).</p>
+        </section>
+
+        <section id="trattamento" class="mb-12 py-8">
+            <h2 class="text-3xl font-bold mb-6 text-center text-primary-accent">Approcci Terapeutici</h2>
+            <p class="text-md mb-8 text-center max-w-2xl mx-auto">
+                Attualmente non esistono cure risolutive per la demenza. L'obiettivo del trattamento è rallentare la progressione della malattia, gestire i sintomi cognitivi (core) e quelli comportamentali (associati), migliorando la qualità della vita del paziente e del caregiver.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold mb-3 text-secondary-accent">Terapie Farmacologiche</h3>
+                    <p class="mb-2"><strong>Sintomi Core (declino cognitivo, perdita di funzione):</strong></p>
+                    <ul class="list-disc list-inside ml-4 mb-4">
+                        <li>Inibitori dell'acetilcolinesterasi (Donepezil, Rivastigmina, Galantamina): per Alzheimer lieve-moderato, Demenza a Corpi di Lewy, Demenza associata a Parkinson.</li>
+                        <li>Memantina: per Alzheimer moderato-grave.</li>
+                    </ul>
+                    <p class="mb-2"><strong>Sintomi Associati (BPSD - Disturbi Psico-Comportamentali):</strong></p>
+                    <ul class="list-disc list-inside ml-4">
+                        <li>Antidepressivi (SSRI, Trazodone): per depressione, ansia, irritabilità.</li>
+                        <li>Antipsicotici (atipici): uso cauto e limitato per psicosi e aggressività gravi, a causa di effetti collaterali.</li>
+                    </ul>
+                    <p class="mt-3 text-sm text-gray-600">Benefici modesti, discutere attese e rischi con paziente/caregiver.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold mb-3 text-secondary-accent">Terapie Non Farmacologiche (TNF)</h3>
+                    <p class="mb-2">Trattamento di <strong>prima linea</strong> per i BPSD e complementari per i sintomi cognitivi:</p>
+                    <ul class="list-disc list-inside ml-4 space-y-1">
+                        <li><strong>Stimolazione Cognitiva:</strong> Reality Orientation Therapy (ROT), Memory Training, Reminiscenza.</li>
+                        <li><strong>Approcci Comportamentali:</strong> Token Economy, Terapia Occupazionale.</li>
+                        <li><strong>Interventi Sensoriali e Ambientali:</strong> Musicoterapia, Stimolazione Multisensoriale (Snoezelen), adattamenti ambientali ("giardino Alzheimer").</li>
+                        <li><strong>Supporto Emotivo e Relazionale:</strong> Terapia di Validazione.</li>
+                    </ul>
+                    <p class="mt-3 text-primary-dark">Fondamentale il coinvolgimento attivo e la formazione dei caregiver.</p>
+                </div>
+            </div>
+            <div class="mt-8">
+                <h3 class="text-xl font-semibold mb-3 text-center text-primary-accent">Focus sulla Gestione dei BPSD</h3>
+                 <p class="text-center max-w-xl mx-auto mb-4">I Disturbi Psico-Comportamentali (BPSD) colpiscono >90% dei pazienti e aumentano significativamente il carico assistenziale. La gestione richiede:</p>
+                <div class="chart-container mx-auto h-80 md:h-96">
+                    <canvas id="bpsdChart"></canvas>
+                </div>
+                <p class="text-sm text-center mt-4 text-gray-600">Fonte: Adattato da sezioni "Trattamento", SNLG Regione Toscana 2015 (pagine 26-37 del PDF).</p>
+            </div>
+        </section>
+
+        <section id="assistenza" class="mb-12 py-8 bg-white rounded-lg shadow-xl p-6">
+            <h2 class="text-3xl font-bold mb-6 text-center text-primary-accent">Pianificazione dell'Assistenza e Supporto</h2>
+            <p class="text-md mb-8 text-center max-w-2xl mx-auto">
+                La gestione della demenza richiede un approccio olistico e personalizzato, che va oltre il trattamento farmacologico. La pianificazione dell'assistenza deve essere tempestiva, integrata e focalizzata sul mantenimento della qualità della vita del paziente nel proprio ambiente il più a lungo possibile.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="text-xl font-semibold mb-2 text-secondary-accent">Elementi Chiave del Piano di Cura:</h4>
+                    <ul class="list-decimal list-inside space-y-2 text-primary-dark">
+                        <li><strong>Diagnosi e presa in carico tempestive:</strong> Identificazione precoce per avviare interventi mirati.</li>
+                        <li><strong>Terapie integrate:</strong> Combinazione di approcci farmacologici e non farmacologici.</li>
+                        <li><strong>Educazione e supporto al caregiver:</strong> Formazione per gestire la malattia e ridurre lo stress.</li>
+                        <li><strong>Team territoriale multidisciplinare:</strong> Coinvolgimento di MMG, specialisti, infermieri, psicologi, assistenti sociali.</li>
+                        <li><strong>Monitoraggio continuo:</strong> Revisione periodica del piano di intervento per adattarlo all'evoluzione della malattia.</li>
+                        <li><strong>Strutture dedicate:</strong> Disponibilità di centri diurni, nuclei residenziali e semi-residenziali specializzati per accoglienza temporanea o a lungo termine, se necessario.</li>
+                        <li><strong>Tutela giuridica:</strong> Considerare l'amministratore di sostegno se la capacità decisionale è compromessa.</li>
+                    </ul>
+                </div>
+                <div class="flex items-center justify-center">
+                     <div class="p-6 bg-primary-light rounded-lg shadow-inner">
+                        <p class="text-lg font-semibold text-primary-accent mb-2">Il Ruolo del Caregiver</p>
+                        <p class="text-primary-dark">Il caregiver è una risorsa fondamentale. Il suo benessere è cruciale. Necessita di:</p>
+                        <ul class="list-disc list-inside ml-4 mt-2 text-primary-dark">
+                            <li>Formazione specifica sulla demenza.</li>
+                            <li>Informazioni chiare e continue.</li>
+                            <li>Supporto psicologico (counselling).</li>
+                            <li>Strategie di coping per gestire lo stress.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <p class="text-sm text-center mt-6 text-gray-600">Fonte: Adattato da sezioni "Pianificazione dell'assistenza sanitaria" e "Trattamento", SNLG Regione Toscana 2015 (pagine 11, 37 del PDF).</p>
+        </section>
+
+        <section id="spiegazione-sintomi" class="mb-12 py-8 bg-white rounded-lg shadow-xl p-6">
+            <h2 class="text-3xl font-bold mb-6 text-center text-primary-accent">Spiegazione Sintomi ✨</h2>
+            <p class="text-md mb-6 text-center max-w-2xl mx-auto">
+                Digita un sintomo legato alla demenza (es. "afasia", "agitazione", "delirium") per ottenere una spiegazione concisa e chiara.
+            </p>
+            <div class="max-w-xl mx-auto flex flex-col items-center">
+                <input type="text" id="symptomInput" placeholder="Inserisci un sintomo..." class="w-full p-3 border border-gray-300 rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-secondary-accent">
+                <button id="explainSymptomBtn" class="bg-primary-accent text-white px-6 py-3 rounded-md font-semibold hover:bg-red-700 transition duration-300 ease-in-out shadow-md">
+                    Spiega Sintomo ✨
+                </button>
+                <div id="symptomExplanation" class="mt-6 p-4 bg-primary-light border border-secondary-accent rounded-md w-full text-primary-dark min-h-[100px] flex items-center justify-center text-center">
+                    <p class="text-gray-500">La spiegazione apparirà qui.</p>
+                </div>
+                <div id="loadingIndicator" class="mt-4 hidden text-secondary-accent">
+                    Caricamento...
+                </div>
+            </div>
+        </section>
+
+        <section id="conclusioni" class="text-center py-8">
+            <h2 class="text-3xl font-bold mb-4 text-primary-accent">Verso una Migliore Gestione della Demenza</h2>
+            <p class="text-lg max-w-3xl mx-auto">
+                La demenza rappresenta una sfida sanitaria e sociale crescente. Un approccio integrato che combini prevenzione, diagnosi precoce, trattamenti personalizzati (farmacologici e non) e un forte supporto ai pazienti e ai loro caregiver è essenziale. La ricerca continua a essere fondamentale per sviluppare nuove strategie terapeutiche e migliorare la qualità della vita delle persone affette da demenza.
+            </p>
+        </section>
+    </main>
+
+    <footer class="bg-primary-dark text-white text-center p-6 mt-12">
+        <p>&copy; 2024 Infografica sulla Demenza. Basata su Linee Guida Regione Toscana 2015.</p>
+        <p class="text-xs mt-2">Questa infografica è a scopo informativo e non sostituisce il parere medico.</p>
+    </footer>
+
+    <script>
+        function wrapLabels(label, maxLength) {
+            if (typeof label !== 'string') return label; 
+            if (label.length <= maxLength) return label;
+
+            const words = label.split(' ');
+            const lines = [];
+            let currentLine = '';
+            for (const word of words) {
+                if ((currentLine + word).length > maxLength && currentLine.length > 0) {
+                    lines.push(currentLine.trim());
+                    currentLine = '';
+                }
+                currentLine += word + ' ';
+            }
+            if (currentLine.trim().length > 0) {
+                lines.push(currentLine.trim());
+            }
+            return lines.length > 0 ? lines : [label]; 
+        }
+
+        const tooltipTitleCallback = function(tooltipItems) {
+            const item = tooltipItems[0];
+            let label = item.chart.data.labels[item.dataIndex];
+            if (Array.isArray(label)) {
+              return label.join(' ');
+            } else {
+              return label;
+            }
+        };
+
+        // Grafico Epidemiologia
+        const epidemiologiaCtx = document.getElementById('epidemiologiaChart').getContext('2d');
+        const epidemiologiaData = {
+            labels: ['60-64', '65-69', '70-74', '75-79', '80-84', '85-89', '90+'].map(l => wrapLabels(l, 16)),
+            datasets: [
+                {
+                    label: 'Prevalenza Uomini (%)',
+                    data: [0.4, 1.6, 2.9, 5.6, 11, 12.8, 22.1],
+                    backgroundColor: '#4ECDC4', 
+                    borderColor: '#45B7D1',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Prevalenza Donne (%)',
+                    data: [0.4, 1.0, 3.1, 6.0, 12.6, 20.2, 30.8],
+                    backgroundColor: '#FF6B6B', 
+                    borderColor: '#FF4A4A',
+                    borderWidth: 1
+                }
+            ]
+        };
+        new Chart(epidemiologiaCtx, {
+            type: 'bar',
+            data: epidemiologiaData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Percentuale (%)' }
+                    },
+                    x: {
+                         title: { display: true, text: 'Fascia d\'Età' }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Prevalenza della Demenza per Età e Genere',
+                        font: { size: 16 }
+                    },
+                    tooltip: { callbacks: { title: tooltipTitleCallback } }
+                }
+            }
+        });
+
+        // Grafico Gestione BPSD
+        const bpsdCtx = document.getElementById('bpsdChart').getContext('2d');
+        const bpsdData = {
+            labels: [
+                wrapLabels('Valutazione Attenta del Sintomo', 16),
+                wrapLabels('Contestualizzazione Ambientale', 16),
+                wrapLabels('Educazione e Coinvolgimento Caregiver', 16),
+                wrapLabels('Terapie Non Farmacologiche (TNF)', 16),
+                wrapLabels('Terapie Farmacologiche (Selettive e Caute)', 16)
+            ],
+            datasets: [{
+                label: 'Approccio alla Gestione dei BPSD',
+                data: [100, 90, 95, 85, 70], 
+                backgroundColor: [
+                    '#FF6B6B', 
+                    '#4ECDC4', 
+                    '#FFE66D', 
+                    '#45B7D1', 
+                    '#FFA07A'  
+                ],
+                hoverOffset: 4
+            }]
+        };
+        new Chart(bpsdCtx, {
+            type: 'doughnut',
+            data: bpsdData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Componenti Chiave nella Gestione dei BPSD',
+                        font: { size: 16 }
+                    },
+                    legend: {
+                        position: 'bottom',
+                    },
+                    tooltip: { callbacks: { title: tooltipTitleCallback } }
+                }
+            }
+        });
+
+        // Funzionalità Gemini API per Spiegazione Sintomi
+        const symptomInput = document.getElementById('symptomInput');
+        const explainSymptomBtn = document.getElementById('explainSymptomBtn');
+        const symptomExplanation = document.getElementById('symptomExplanation');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+
+        explainSymptomBtn.addEventListener('click', async () => {
+            const symptom = symptomInput.value.trim();
+            if (!symptom) {
+                symptomExplanation.innerHTML = '<p class="text-red-500">Per favore, inserisci un sintomo.</p>';
+                return;
+            }
+
+            loadingIndicator.classList.remove('hidden');
+            symptomExplanation.innerHTML = ''; // Clear previous explanation
+
+            try {
+                let chatHistory = [];
+                const prompt = `Spiega in modo semplice e conciso cosa significa '${symptom}' nel contesto della sindrome demenziale, basandoti sulle informazioni generali sulle demenze e il loro impatto.`;
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+                const payload = { contents: chatHistory };
+                const apiKey = ""; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    symptomExplanation.innerHTML = `<p>${text}</p>`;
+                } else {
+                    symptomExplanation.innerHTML = '<p class="text-red-500">Impossibile ottenere una spiegazione. Riprova.</p>';
+                }
+            } catch (error) {
+                console.error('Errore durante la chiamata API Gemini:', error);
+                symptomExplanation.innerHTML = '<p class="text-red-500">Si è verificato un errore. Controlla la console per i dettagli.</p>';
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
