@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini-Cog Test - Parole Casuali</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #F7FFF7; /* Very Light Mint */
+            color: #1A535C; /* Dark Teal */
+            padding: 1.5rem;
+        }
+        .container {
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+        .words-display {
+            font-size: 2.5rem; /* text-5xl */
+            font-weight: 700; /* bold */
+            margin-bottom: 2rem;
+            line-height: 1.2;
+            color: #FF6B6B; /* Coral Red */
+        }
+        .test-title {
+            font-size: 1.875rem; /* text-3xl */
+            font-weight: 600; /* semibold */
+            margin-bottom: 1.5rem;
+            color: #4ECDC4; /* Turquoise */
+        }
+        .reference {
+            font-size: 0.875rem; /* text-sm */
+            color: #4A5568; /* text-gray-700 */
+            margin-top: 2rem;
+            line-height: 1.4;
+        }
+        .reference a {
+            color: #1A535C; /* Dark Teal */
+            text-decoration: underline;
+            transition: color 0.3s ease;
+        }
+        .reference a:hover {
+            color: #FF6B6B; /* Coral Red on hover */
+        }
+        .reload-button {
+            display: inline-block;
+            background-color: #4ECDC4; /* Turquoise */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+            margin-top: 1.5rem;
+        }
+        .reload-button:hover {
+            background-color: #38A89D; /* Slightly darker Turquoise on hover */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="test-title">Mini-Cog Test</h1>
+        <p class="text-lg mb-4 text-primary-dark">Memorizza queste tre parole:</p>
+        <div id="randomWords" class="words-display">
+            </div>
+        <button onclick="location.reload()" class="reload-button">Genera Nuove Parole</button>
+        <p class="reference">
+            **Riferimento Bibliografico:**<br>
+            Borson, S., Scanlan, J., Chen, P., & Ganguli, M. (2000). The Mini-Cog: A cognitive "Vital Signs" measure for dementia screening in multilingual elderly. *International Journal of Geriatric Psychiatry, 15*(11), 1021-1027.
+            DOI: <a href="https://doi.org/10.1002/1099-1166(200011)15:11<1021::AID-GPS234>3.0.CO;2-6" target="_blank">10.1002/1099-1166(200011)15:11<1021::AID-GPS234>3.0.CO;2-6</a>
+        </p>
+    </div>
+
+    <script>
+        const wordList = [
+            "Tavolo", "Nuvola", "Caffè", "Albero", "Libro", "Chiave", "Sedia", "Fiume", "Palla", "Fiore",
+            "Treno", "Sale", "Finestra", "Pane", "Stella", "Telefono", "Montagna", "Bicicletta", "Acqua", "Gatto",
+            "Orologio", "Zucchero", "Strada", "Uccello", "Matita", "Sole", "Scarpa", "Vento", "Frutta", "Ponte",
+            "Specchio", "Erba", "Bottiglia", "Cielo", "Mela", "Nave", "Tazza", "Luna", "Giardino", "Porta",
+            "Burro", "Foglia", "Cuscino", "Lampada", "Cappello", "Fiume", "Dente", "Nido", "Bottone", "Voce"
+        ];
+
+        function getRandomWords(count) {
+            const shuffled = [...wordList].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, count);
+        }
+
+        window.onload = function() {
+            const selectedWords = getRandomWords(3);
+            const wordsContainer = document.getElementById('randomWords');
+            wordsContainer.innerHTML = selectedWords.join('<br>');
+        };
+    </script>
+</body>
+</html>
