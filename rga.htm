@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Framework Geriatric 5Ms Personalizzato</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Visualization & Content Choices:
+        - Introduzione: Goal: Provide overview. Method: Text paragraphs. Interaction: Read. Justification: Standard way to introduce the topic.
+        - Le 5 "M": Goal: Detail each component of the framework. Method: Dedicated sections for each 'M', using headings, paragraphs, and bullet lists for tools/key points. Interaction: Click to expand/view details for each 'M' via navigation. Justification: Clear, structured presentation of core concepts.
+        - Disposizioni Anticipate: Goal: Explain Italian law. Method: Text summary. Interaction: Read. Justification: Direct information delivery.
+        - Rapid Geriatric Assessment (RGA): Goal: Explain RGA, its tools, and target population. Method: Text paragraphs, bullet list for tools. Interaction: Read. Justification: Concise explanation of a related assessment.
+        - Riferimenti: Goal: List sources. Method: Numbered list. Interaction: Read. Justification: Standard academic practice.
+        - No charts are used as the source material is primarily textual. Focus is on clear presentation and navigation of information.
+        - Library/Method: HTML, Tailwind CSS, Vanilla JS for navigation.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif; /* Using Inter as a default sans-serif font */
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; /* slate-300 */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; /* slate-500 */
+        }
+        .nav-link {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .nav-link.active, .nav-link:hover {
+            background-color: #0d9488; /* teal-600 */
+            color: white;
+        }
+         .nav-link.active {
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-amber-50 text-stone-800 flex flex-col md:flex-row min-h-screen">
+
+    <nav class="bg-stone-200 w-full md:w-72 lg:w-80 p-6 shadow-lg md:min-h-screen md:sticky md:top-0 space-y-3">
+        <h1 class="text-2xl font-bold text-teal-700 mb-6 border-b-2 border-teal-500 pb-3">Framework 5Ms</h1>
+        <ul class="space-y-2">
+            <li><a href="#introduzione" class="nav-link block p-3 rounded-lg text-stone-700 hover:bg-teal-600 hover:text-white">Introduzione</a></li>
+            <li>
+                <span class="font-semibold text-teal-700 block p-3">Le 5 "M"</span>
+                <ul class="ml-4 space-y-1 mt-1">
+                    <li><a href="#mente" class="nav-link block p-2 rounded-lg text-sm text-stone-600 hover:bg-teal-600 hover:text-white">1. Mind (Mente)</a></li>
+                    <li><a href="#mobilita" class="nav-link block p-2 rounded-lg text-sm text-stone-600 hover:bg-teal-600 hover:text-white">2. Mobility (Mobilità)</a></li>
+                    <li><a href="#farmaci" class="nav-link block p-2 rounded-lg text-sm text-stone-600 hover:bg-teal-600 hover:text-white">3. Medications (Farmaci)</a></li>
+                    <li><a href="#cio-che-conta" class="nav-link block p-2 rounded-lg text-sm text-stone-600 hover:bg-teal-600 hover:text-white">4. What Matters Most</a></li>
+                    <li><a href="#multicomplessita" class="nav-link block p-2 rounded-lg text-sm text-stone-600 hover:bg-teal-600 hover:text-white">5. Multicomplexity</a></li>
+                </ul>
+            </li>
+            <li><a href="#disposizioni-anticipate" class="nav-link block p-3 rounded-lg text-stone-700 hover:bg-teal-600 hover:text-white">Disposizioni Anticipate</a></li>
+            <li><a href="#rga" class="nav-link block p-3 rounded-lg text-stone-700 hover:bg-teal-600 hover:text-white">Rapid Geriatric Assessment</a></li>
+            <li><a href="#riferimenti" class="nav-link block p-3 rounded-lg text-stone-700 hover:bg-teal-600 hover:text-white">Riferimenti</a></li>
+        </ul>
+    </nav>
+
+    <main class="flex-1 p-6 md:p-10 bg-white shadow-inner overflow-y-auto">
+        <div id="introduzione" class="content-section prose max-w-none prose-teal">
+            <h2 class="text-3xl font-semibold text-teal-700 border-b-2 border-amber-400 pb-2 mb-6">Introduzione: Un Approccio Olistico alla Cura Geriatrica</h2>
+            <p class="text-lg leading-relaxed">In un mondo dove la popolazione anziana è in rapida crescita, la complessità dell'assistenza sanitaria per gli adulti più anziani è aumentata esponenzialmente. La carenza di geriatri specializzati sottolinea la necessità per tutti i clinici di acquisire una competenza di base nella cura degli anziani. Il framework "Geriatric 5Ms" offre un approccio strutturato e centrato sulla persona per gestire le sfide uniche presentate dai pazienti anziani.</p>
+            <p class="mt-4 text-lg leading-relaxed">Questo modello si discosta dall'enfasi tradizionale sulla gestione delle singole malattie, promuovendo invece l'identificazione precoce e la gestione delle sindromi geriatriche (come fragilità, delirium e cadute) che possono influenzare negativamente lo stato funzionale, la qualità della vita e la mortalità. L'applicazione delle "5Ms" guida i clinici nell'ottimizzazione del benessere generale e nella creazione di piani di cura coordinati che rispondano ai bisogni complessi degli anziani.</p>
+        </div>
+
+        <div id="mente" class="content-section prose max-w-none prose-teal">
+            <h2 class="text-3xl font-semibold text-teal-700 border-b-2 border-amber-400 pb-2 mb-6">1. Mind (Mente)</h2>
+            <p class="text-lg leading-relaxed">L'area "Mente" si concentra sulla valutazione della salute cognitiva e psicologica del paziente. Questo dominio è fondamentale perché influenza il modo in cui tutte le altre aree vengono evaluate e gestite. Condizioni come la demenza, il delirium e la depressione possono avere un impatto significativo sulla capacità del paziente di partecipare alle decisioni sulla propria cura, di aderire ai regimi farmacologici o di comprendere le proprie condizioni di salute. Una valutazione attenta di questi aspetti è il punto di partenza per un'assistenza efficace e personalizzata.</p>
+            <h3 class="text-xl font-medium mt-6 mb-3 text-teal-600">Strumenti di valutazione comuni:</h3>
+            <ul class="list-disc list-inside space-y-1 text-lg">
+                <li>Test rapido di screening per la demenza (es. Mini-Cog)</li>
+                <li>Test multidominio (es. MoCa - Montreal Cognitive Assessment)</li>
+                <li>Scale per la depressione (es. GDS - Geriatric Depression Scale)</li>
+                <li>Metodi per la valutazione del delirium (es. CAM - Confusion Assessment Method)</li>
+            </ul>
+            <p class="mt-4 text-lg leading-relaxed">Valori alterati in questi test richiedono approfondimento con una valutazione completa che può includere esame neurologico, esami ematici ed eventuali esami di imaging.</p>
+        </div>
+
+        <div id="mobilita" class="content-section prose max-w-none prose-teal">
+            <h2 class="text-3xl font-semibold text-teal-700 border-b-2 border-amber-400 pb-2 mb-6">2. Mobility (Mobilità)</h2>
+            <p class="text-lg leading-relaxed">La "Mobilità" riguarda la capacità del paziente di muoversi, mantenere posizioni corporee e camminare. La deambulazione è cruciale per l'indipendenza funzionale negli anziani. Una mobilità compromessa è associata a una ridotta qualità della vita, aumento del rischio di cadute, maggiore dipendenza nelle attività della vita quotidiana e, in casi gravi, un aumento della mortalità.</p>
+            <p class="mt-4 text-lg leading-relaxed">Valutare la mobilità significa considerare la funzione fisica generale, l'equilibrio e il rischio di cadute, con l'obiettivo di implementare strategie per mantenere l'indipendenza e prevenire infortuni.</p>
+            <h3 class="text-xl font-medium mt-6 mb-3 text-teal-600">Strumenti e questionari utili:</h3>
+            <ul class="list-disc list-inside space-y-1 text-lg">
+                <li>Stay Independent Questionnaire</li>
+                <li>Three Key Questions (per identificare il rischio di cadute)</li>
+                <li>TUG test (Timed Up and Go test)</li>
+                <li>The 4-stage Balance Test</li>
+            </ul>
+        </div>
+
+        <div id="farmaci" class="content-section prose max-w-none prose-teal">
+            <h2 class="text-3xl font-semibold text-teal-700 border-b-2 border-amber-400 pb-2 mb-6">3. Medications (Farmaci)</h2>
+            <p class="text-lg leading-relaxed">Il dominio "Farmaci" si concentra sulla gestione ottimale della terapia farmacologica del paziente, in particolare negli anziani che spesso assumono più farmaci contemporaneamente (polifarmacoterapia). Questa condizione può portare a interazioni farmaco-farmaco, eventi avversi, non aderenza e declino cognitivo o funzionale.</p>
+            <p class="mt-4 text-lg leading-relaxed">L'obiettivo è rivedere e conciliare tutti i farmaci, valutando i rischi e i benefici di ciascuno, e considerare il “<strong class="text-teal-600">Deprescribing</strong>” – il processo di riduzione o sospensione dei farmaci – quando i potenziali danni superano i benefici, per ridurre il carico farmacologico e migliorare la sicurezza del paziente.</p>
+        </div>
+
+        <div id="cio-che-conta" class="content-section prose max-w-none prose-teal">
+            <h2 class="text-3xl font-semibold text-teal-700 border-b-2 border-amber-400 pb-2 mb-6">4. What Matters Most (Ciò che Conta di Più)</h2>
+            <p class="text-lg leading-relaxed">"Ciò che conta di più" pone il paziente al centro del processo decisionale medico. Questo dominio enfatizza l'importanza di comprendere i valori, gli obiettivi e le preferenze personali del paziente riguardo alla propria salute e alla cura.</p>
+            <p class="mt-4 text-lg leading-relaxed">Significa avviare un dialogo aperto tra paziente e clinico sui benefici, i rischi e gli oneri di qualsiasi test diagnostico o trattamento proposto, tenendo conto dello stato funzionale e cognitivo di base del paziente, delle condizioni mediche croniche e delle determinanti sociali della salute. L'obiettivo è garantire che l'assistenza sia allineata con ciò che è veramente significativo per il paziente, inclusa la pianificazione anticipata delle cure. Può essere necessaria la nomina di un <strong class="text-teal-600">fiduciario</strong> che prenda le decisioni al posto del paziente quando impossibilitato (vedi sezione Disposizioni Anticipate).</p>
+        </div>
+
+        <div id="multicomplessita" class="content-section prose max-w-none prose-teal">
+            <h2 class="text-3xl font-semibold text-teal-700 border-b-2 border-amber-400 pb-2 mb-6">5. Multicomplexity (Multicomplessità)</h2>
+            <p class="text-lg leading-relaxed">La "Multicomplessità" descrive la persona nella sua interezza, tipicamente un adulto anziano che vive con molteplici condizioni croniche e/o bisogni biopsicosociali complicati. Questo dominio riconosce che la salute di un individuo è influenzata da una vasta gamma di fattori, inclusi i determinanti sociali della salute come la sicurezza economica, l'accesso all'istruzione e alla qualità dell'assistenza sanitaria, l'ambiente circostante e il contesto sociale e comunitario.</p>
+            <p class="mt-4 text-lg leading-relaxed">La gestione della multicomplessità richiede un approccio olistico che consideri l'intersezione di tutte queste condizioni e il loro impatto sulla gestione complessiva della salute del paziente.</p>
+        </div>
+
+        <div id="disposizioni-anticipate" class="content-section prose max-w-none prose-teal">
+            <h2 class="text-3xl font-semibold text-teal-700 border-b-2 border-amber-400 pb-2 mb-6">Disposizioni Anticipate di Trattamento (DAT)</h2>
+            <p class="text-lg leading-relaxed">In Italia, la <strong class="text-teal-600">Legge n. 219 del 22 dicembre 2017</strong>, "Norme in materia di consenso informato e di disposizioni anticipate di trattamento", ha introdotto un quadro normativo chiaro in materia di consenso informato e di rifiuto dei trattamenti sanitari, nonché sulle disposizioni anticipate di trattamento (DAT), comunemente note come "testamento biologico".</p>
+            <p class="mt-4 text-lg leading-relaxed">Questa legge riconosce il diritto di ogni persona maggiorenne e capace di intendere e di volere di esprimere le proprie volontà in merito ai trattamenti sanitari futuri, nel caso in cui si trovi in una condizione di incapacità di autodeterminarsi. Le DAT devono essere redatte per atto pubblico o per scrittura privata autenticata, oppure per scrittura privata consegnata personalmente all'ufficio dello stato civile del comune di residenza. La legge prevede anche la possibilità di nominare un <strong class="text-teal-600">fiduciario</strong> che rappresenti il disponente nelle relazioni con il medico e le strutture sanitarie.</p>
+        </div>
+
+        <div id="rga" class="content-section prose max-w-none prose-teal">
+            <h2 class="text-3xl font-semibold text-teal-700 border-b-2 border-amber-400 pb-2 mb-6">Rapid Geriatric Assessment (RGA)</h2>
+            <p class="text-lg leading-relaxed">Il Rapid Geriatric Assessment (RGA) è uno strumento progettato per lo screening di fragilità, sarcopenia, anoressia legata all'invecchiamento e deterioramento cognitivo. Questo strumento rapido e di facile utilizzo copre in particolare le prime due "M" del framework 5Ms: <strong class="text-teal-600">Mind (Mente)</strong> e <strong class="text-teal-600">Mobility (Mobilità)</strong>, fornendo un'identificazione precoce di problematiche che potrebbero richiedere una valutazione geriatrica completa.</p>
+            <h3 class="text-xl font-medium mt-6 mb-3 text-teal-600">Strumenti inclusi nel RGA:</h3>
+            <ul class="list-disc list-inside space-y-1 text-lg">
+                <li>Simple FRAIL Questionnaire Screening Tool</li>
+                <li>SARC-F Screening for Sarcopenia</li>
+                <li>Simplified Nutritional Assessment Questionnaire (SNAQ)</li>
+                <li>Rapid Cognitive Screening (RCS)</li>
+            </ul>
+            <p class="mt-4 text-lg leading-relaxed">Il RGA è stato validato per l'applicazione su <strong class="text-teal-600">adulti anziani che vivono in comunità (community-dwelling older adults)</strong>. Lo studio di Tacchino et al. (2025) ha coinvolto 100 adulti anziani residenti in comunità, reclutati casualmente da studi di medici di medicina generale a Genova, Italia. Questo suggerisce che lo strumento è adatto per lo screening di sindromi geriatriche in contesti di assistenza primaria.</p>
+        </div>
+
+        <div id="riferimenti" class="content-section prose max-w-none prose-teal">
+            <h2 class="text-3xl font-semibold text-teal-700 border-b-2 border-amber-400 pb-2 mb-6">Riferimenti Bibliografici</h2>
+            <ol class="list-decimal list-inside space-y-2 text-lg">
+                <li>Sohn BC, Tung EE, Takahashi PY, Verdoorn BP. Clinician's Guide to Geriatric Assessment. Mayo Clin Proc. 2024;99(11):1773-1784.</li>
+                <li>Tacchino C, Carmisciano L, Page E, Ottaviani S, Tagliafico L, Boccini A, Signori A, Giannotti C, Nencioni A, Monacelli F. Validation of the Italian Version of the Rapid Geriatric Assessment in Community-Dwelling Older Adults. Geriatrics. 2025;10(2):38.</li>
+            </ol>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const contentSections = document.querySelectorAll('.content-section');
+
+            function updateContent(hash) {
+                contentSections.forEach(section => {
+                    section.classList.remove('active');
+                });
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                });
+
+                let activeSectionId = hash ? hash.substring(1) : 'introduzione';
+                const activeSection = document.getElementById(activeSectionId);
+                const activeLink = document.querySelector(`.nav-link[href="#${activeSectionId}"]`);
+
+                if (activeSection) {
+                    activeSection.classList.add('active');
+                } else {
+                    // Fallback to introduction if hash is invalid
+                    document.getElementById('introduzione').classList.add('active');
+                    document.querySelector('.nav-link[href="#introduzione"]').classList.add('active');
+                }
+                if (activeLink) {
+                    activeLink.classList.add('active');
+                }
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function (e) {
+                    // e.preventDefault(); // Keep default behavior to update URL hash
+                    const targetId = this.getAttribute('href');
+                    updateContent(targetId);
+                     // Scroll to top of main content area on navigation
+                    document.querySelector('main').scrollTop = 0;
+                });
+            });
+
+            // Initial content update based on URL hash or default
+            updateContent(window.location.hash);
+
+            // Listen to hash changes (e.g., browser back/forward buttons)
+            window.addEventListener('hashchange', function() {
+                updateContent(window.location.hash);
+            });
+        });
+    </script>
+
+</body>
+</html>
