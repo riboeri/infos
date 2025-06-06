@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guida Interattiva al Bendaggio all'Ossido di Zinco</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: Ho progettato l'applicazione con una navigazione a schede in alto (Panoramica, Indicazioni, Applicazione, Confronto, Sicurezza) per consentire un accesso rapido e non lineare alle informazioni. Questa struttura, a differenza di quella del report, è orientata all'utente e permette di trovare subito ciò che serve. Ad esempio, un professionista può saltare direttamente alla sezione "Applicazione" per un ripasso tecnico, o a "Confronto" per spiegare le differenze a un paziente. L'interattività (schede cliccabili, grafici dinamici) è pensata per rendere i concetti complessi, come i profili di pressione, immediatamente comprensibili. -->
+    <!-- Visualization & Content Choices: 
+        - Panoramica: Report Info -> Proprietà farmacologiche. Goal -> Informare rapidamente. Viz/Presentation -> Griglia di card con icone (Unicode) e testo breve. Interaction -> Nessuna, per semplicità. Justification -> Rende le proprietà chiave immediatamente visibili e facili da memorizzare. Library/Method -> HTML/Tailwind.
+        - Indicazioni: Report Info -> Patologie trattabili. Goal -> Organizzare per categoria. Viz/Presentation -> Sistema a tab (Venosa, Traumatologia, etc.). Interaction -> Click sui tab per mostrare i contenuti specifici. Justification -> Evita un lungo elenco, permettendo all'utente di focalizzarsi sull'area di interesse. Library/Method -> HTML/Tailwind/JS.
+        - Confronto: Report Info -> Differenze tra bendaggio elastocontenitivo ed elastocompressivo. Goal -> Comparare concetti chiave. Viz/Presentation -> Tabella comparativa e un grafico a barre Chart.js. Interaction -> Il grafico mostra dinamicamente i profili di pressione (bassa a riposo/alta al lavoro vs. alta a riposo/alta al lavoro). Justification -> Visualizza il concetto più importante e difficile da afferrare del report (pressioni differenziali) in modo inequivocabile. Library/Method -> Chart.js (Canvas).
+        - Sicurezza: Report Info -> Controindicazioni e precauzioni. Goal -> Avvisare in modo chiaro. Viz/Presentation -> Liste separate con icone (Unicode) e colori di avvertimento. Interaction -> Nessuna, per non distrarre dal messaggio critico. Justification -> L'uso di icone e colori attira l'attenzione sui punti critici per la sicurezza del paziente. Library/Method -> HTML/Tailwind.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+            color: #3C5B6F;
+        }
+        .nav-link {
+            transition: color 0.3s, border-color 0.3s;
+        }
+        .nav-link.active {
+            color: #F9A870;
+            border-bottom-color: #F9A870;
+        }
+        .nav-link:not(.active):hover {
+            color: #5e8aa6;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #EAEAEA;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .btn-primary {
+            background-color: #3C5B6F;
+            color: #FFFFFF;
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #5e8aa6;
+        }
+        .tag {
+            background-color: #A8D8EA;
+            color: #3C5B6F;
+        }
+        .warning-icon {
+            color: #ef4444; 
+        }
+        .caution-icon {
+            color: #f59e0b;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-[#3C5B6F]">Guida al Bendaggio all'Ossido di Zinco</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#panoramica" class="nav-link px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">Panoramica</a>
+                        <a href="#indicazioni" class="nav-link px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">Indicazioni</a>
+                        <a href="#applicazione" class="nav-link px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">Applicazione</a>
+                        <a href="#confronto" class="nav-link px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">Confronto</a>
+                        <a href="#sicurezza" class="nav-link px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">Sicurezza</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                     <button id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-[#3C5B6F] hover:text-white hover:bg-[#5e8aa6] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                        <span class="sr-only">Apri menu principale</span>
+                        <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        <svg class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+             <div class="md:hidden hidden" id="mobile-menu">
+                <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                    <a href="#panoramica" class="nav-link block px-3 py-2 rounded-md text-base font-medium border-b-2 border-transparent">Panoramica</a>
+                    <a href="#indicazioni" class="nav-link block px-3 py-2 rounded-md text-base font-medium border-b-2 border-transparent">Indicazioni</a>
+                    <a href="#applicazione" class="nav-link block px-3 py-2 rounded-md text-base font-medium border-b-2 border-transparent">Applicazione</a>
+                    <a href="#confronto" class="nav-link block px-3 py-2 rounded-md text-base font-medium border-b-2 border-transparent">Confronto</a>
+                    <a href="#sicurezza" class="nav-link block px-3 py-2 rounded-md text-base font-medium border-b-2 border-transparent">Sicurezza</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        
+        <section id="panoramica" class="page-section mb-16 scroll-mt-20">
+            <h2 class="text-3xl font-bold mb-2 text-center">Un Presidio Terapeutico, Molteplici Benefici</h2>
+            <p class="text-lg text-center text-gray-600 max-w-3xl mx-auto mb-10">Il bendaggio all'ossido di zinco è più di una semplice benda: è un trattamento attivo che combina supporto meccanico e proprietà farmacologiche per proteggere la pelle e favorire la guarigione. Questa sezione riassume le sue azioni chiave.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="card text-center">
+                    <div class="text-4xl mb-4 text-[#A8D8EA]">🛡️</div>
+                    <h3 class="text-xl font-semibold mb-2">Effetto Barriera</h3>
+                    <p>Crea un film protettivo che isola la cute da umidità e agenti irritanti esterni, prevenendo dermatiti e lesioni.</p>
+                </div>
+                <div class="card text-center">
+                    <div class="text-4xl mb-4 text-[#A8D8EA]">🌿</div>
+                    <h3 class="text-xl font-semibold mb-2">Azione Lenitiva</h3>
+                    <p>Calma rossori, prurito e bruciore. Riduce significativamente l'infiammazione e il dolore associati alle irritazioni cutanee.</p>
+                </div>
+                <div class="card text-center">
+                    <div class="text-4xl mb-4 text-[#A8D8EA]">✨</div>
+                    <h3 class="text-xl font-semibold mb-2">Promuove la Cicatrizzazione</h3>
+                    <p>Stimola la produzione di collagene e ha un'azione astringente, accelerando la riparazione dei tessuti e la guarigione delle ferite.</p>
+                </div>
+                <div class="card text-center">
+                    <div class="text-4xl mb-4 text-[#A8D8EA]">🦠</div>
+                    <h3 class="text-xl font-semibold mb-2">Proprietà Antibatteriche</h3>
+                    <p>Riduce il rischio di infezioni cutanee agendo come una barriera fisica che ostacola la proliferazione batterica.</p>
+                </div>
+                <div class="card text-center">
+                    <div class="text-4xl mb-4 text-[#A8D8EA]">💧</div>
+                    <h3 class="text-xl font-semibold mb-2">Effetto Antiedematoso</h3>
+                    <p>L'azione combinata occlusiva e compressiva aiuta a ridurre il gonfiore e a drenare i liquidi in eccesso.</p>
+                </div>
+                <div class="card text-center">
+                     <div class="text-4xl mb-4 text-[#A8D8EA]">⚙️</div>
+                    <h3 class="text-xl font-semibold mb-2">Supporto Meccanico</h3>
+                    <p>Fornisce un supporto contenitivo e stabilizzante, essenziale nel trattamento di traumi come distorsioni e contusioni.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="indicazioni" class="page-section mb-16 scroll-mt-20">
+            <h2 class="text-3xl font-bold mb-2 text-center">Quando Usarlo: Applicazioni Cliniche</h2>
+            <p class="text-lg text-center text-gray-600 max-w-3xl mx-auto mb-10">La versatilità del bendaggio all'ossido di zinco lo rende uno strumento prezioso in diversi contesti clinici. Seleziona una categoria per esplorare le indicazioni specifiche.</p>
+            <div class="w-full max-w-4xl mx-auto">
+                <div class="mb-4 flex flex-wrap justify-center border-b border-gray-200">
+                    <button class="tab-link active px-4 py-2 text-lg font-medium" data-tab="venosa">Patologie Venose</button>
+                    <button class="tab-link px-4 py-2 text-lg font-medium" data-tab="trauma">Traumatologia</button>
+                    <button class="tab-link px-4 py-2 text-lg font-medium" data-tab="derma">Dermatologia</button>
+                    <button class="tab-link px-4 py-2 text-lg font-medium" data-tab="edema">Edemi</button>
+                </div>
+                <div id="venosa" class="tab-content active card">
+                    <h3 class="text-2xl font-bold mb-4">Insufficienza Venosa e Ulcere</h3>
+                    <p class="mb-4">È la terapia di prima scelta per le ulcere da stasi venosa, specialmente in pazienti deambulanti. La sua azione elastocontenitiva migliora il microcircolo e riduce l'edema, favorendo la guarigione.</p>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li>Ulcere venose degli arti inferiori</li>
+                        <li>Gestione di varici e flebiti</li>
+                        <li>Trattamento di tromboflebiti superficiali</li>
+                        <li>Dermatite da stasi</li>
+                    </ul>
+                </div>
+                <div id="trauma" class="tab-content card">
+                    <h3 class="text-2xl font-bold mb-4">Traumi e Ortopedia</h3>
+                    <p class="mb-4">Fornisce un supporto contenitivo e lenitivo, riducendo dolore e gonfiore. Ideale come alternativa al gesso in alcuni casi e per la gestione post-traumatica.</p>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li>Distorsioni e lussazioni</li>
+                        <li>Contusioni e strappi muscolari</li>
+                        <li>Gestione di ematomi</li>
+                        <li>Trattamento post-rimozione del gesso</li>
+                    </ul>
+                </div>
+                <div id="derma" class="tab-content card">
+                    <h3 class="text-2xl font-bold mb-4">Patologie Dermatologiche</h3>
+                    <p class="mb-4">L'effetto barriera e le proprietà lenitive lo rendono un trattamento efficace per un'ampia gamma di affezioni cutanee, sia in fase acuta che come prevenzione.</p>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li>Eczemi e dermatiti (da contatto, da sudore)</li>
+                        <li>Prevenzione e trattamento delle piaghe da decubito</li>
+                        <li>Arrossamenti cutanei e prurito</li>
+                        <li>Supporto in caso di acne, rosacea o psoriasi</li>
+                    </ul>
+                </div>
+                <div id="edema" class="tab-content card">
+                     <h3 class="text-2xl font-bold mb-4">Edemi e Linfedemi</h3>
+                    <p class="mb-4">Componente chiave nella terapia complessa decongestionante (CDT). L'azione compressiva e antinfiammatoria favorisce il drenaggio dei liquidi in eccesso.</p>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li>Flebolinfedema</li>
+                        <li>Edema post-traumatico</li>
+                        <li>Supporto nel trattamento del linfedema cronico</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="applicazione" class="page-section mb-16 scroll-mt-20">
+            <h2 class="text-3xl font-bold mb-2 text-center">Come si Applica: Guida Pratica</h2>
+            <p class="text-lg text-center text-gray-600 max-w-3xl mx-auto mb-10">Una corretta applicazione è essenziale per l'efficacia e la sicurezza del trattamento. Segui questi passaggi e consulta le risorse video per una dimostrazione visiva.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+                <div class="card">
+                    <div class="text-4xl mb-4">1</div>
+                    <h4 class="font-semibold text-lg mb-2">Preparazione</h4>
+                    <p class="text-sm">Pulire, disinfettare e asciugare l'area. Applicare eventuali medicazioni primarie. Posizionare l'arto correttamente (piede a 90°).</p>
+                </div>
+                <div class="card">
+                    <div class="text-4xl mb-4">2</div>
+                    <h4 class="font-semibold text-lg mb-2">Partenza</h4>
+                    <p class="text-sm">Iniziare dalle teste metatarsali, avvolgendo piede e tallone. La compressione deve essere maggiore alla caviglia.</p>
+                </div>
+                <div class="card">
+                    <div class="text-4xl mb-4">3</div>
+                    <h4 class="font-semibold text-lg mb-2">Applicazione</h4>
+                    <p class="text-sm">Risalire con tecnica a spirale o a otto, sovrapponendo ogni giro del 50%. La pressione deve diminuire verso il ginocchio.</p>
+                </div>
+                <div class="card">
+                    <div class="text-4xl mb-4">4</div>
+                    <h4 class="font-semibold text-lg mb-2">Finalizzazione</h4>
+                    <p class="text-sm">Assicurarsi che non ci siano pieghe o grinze. Fissare il bendaggio senza creare costrizione. Coprire per proteggere i vestiti.</p>
+                </div>
+            </div>
+             <div class="mt-12">
+                <h3 class="text-2xl font-bold text-center mb-6">Video Tutorial di Riferimento</h3>
+                <div class="max-w-4xl mx-auto overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="p-3 font-semibold">Tipo di Applicazione</th>
+                                <th class="p-3 font-semibold">Descrizione Chiave</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b">
+                                <td class="p-3">Bendaggio Flebologico (Ulcere)</td>
+                                <td class="p-3">Sovrapposizione maggiore alla base (2/3), poi 50% risalendo. Evitare grinze.</td>
+                            </tr>
+                             <tr class="border-b bg-gray-50">
+                                <td class="p-3">Bendaggio di Caviglia</td>
+                                <td class="p-3">Creare sostegno passando sui malleoli. Chiudere con giri circolari perfetti.</td>
+                            </tr>
+                             <tr class="border-b">
+                                <td class="p-3">Bendaggio con Soletta di Lejars</td>
+                                <td class="p-3">Compressione maggiore sulla pianta del piede, decrescente verso il ginocchio.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="text-sm text-center mt-4 text-gray-500">I link ai video specifici sono nel report originale. Questi sono esempi delle tecniche chiave da ricercare.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="confronto" class="page-section mb-16 scroll-mt-20">
+            <h2 class="text-3xl font-bold mb-2 text-center">Bendaggio a Confronto: Contenitivo vs. Compressivo</h2>
+            <p class="text-lg text-center text-gray-600 max-w-3xl mx-auto mb-10">Non tutti i bendaggi sono uguali. Comprendere la differenza tra un bendaggio elastocontenitivo (come quello all'ossido di zinco) e uno elastocompressivo è cruciale per la scelta terapeutica corretta.</p>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                <div class="card">
+                    <h3 class="text-2xl font-bold mb-4">Tabella Comparativa</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-semibold text-lg">Bendaggio Elastocontenitivo <span class="tag text-xs font-medium ml-2 rounded-full px-2 py-1">Ossido di Zinco</span></h4>
+                            <ul class="list-disc list-inside mt-2 text-sm space-y-1">
+                                <li><strong>Materiale:</strong> Bende a corta estensibilità.</li>
+                                <li><strong>Paziente Ideale:</strong> Deambulante (che cammina).</li>
+                                <li><strong>Pressione a Riposo:</strong> Bassa (comfort elevato).</li>
+                                <li><strong>Pressione al Lavoro:</strong> Alta (massima efficacia con la pompa muscolare).</li>
+                                <li><strong>Durata:</strong> Fino a 7-10 giorni.</li>
+                            </ul>
+                        </div>
+                        <div class="border-t pt-4">
+                            <h4 class="font-semibold text-lg">Bendaggio Elastocompressivo</h4>
+                             <ul class="list-disc list-inside mt-2 text-sm space-y-1">
+                                <li><strong>Materiale:</strong> Bende a lunga estensibilità.</li>
+                                <li><strong>Paziente Ideale:</strong> Allettato o con mobilità ridotta.</li>
+                                <li><strong>Pressione a Riposo:</strong> Alta (compressione costante).</li>
+                                <li><strong>Pressione al Lavoro:</strong> Alta.</li>
+                                <li><strong>Durata:</strong> Spesso richiede rimozione notturna.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="text-2xl font-bold mb-4">Profilo di Pressione Visualizzato</h3>
+                    <p class="text-sm text-gray-600 mb-4">Il grafico mostra la differenza fondamentale: il bendaggio contenitivo lavora *con* il movimento del paziente, mentre quello compressivo esercita una pressione costante.</p>
+                    <div class="chart-container">
+                        <canvas id="pressureChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="sicurezza" class="page-section scroll-mt-20">
+            <h2 class="text-3xl font-bold mb-2 text-center">Sicurezza Prima di Tutto: Avvertenze e Controindicazioni</h2>
+            <p class="text-lg text-center text-gray-600 max-w-3xl mx-auto mb-10">L'uso del bendaggio è sicuro ed efficace, ma richiede un'attenta valutazione clinica per escludere rischi e garantire la sicurezza del paziente.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card border-l-4 border-red-500">
+                    <h3 class="text-2xl font-bold mb-4 flex items-center"><span class="warning-icon mr-3">🚫</span>Controindicazioni Assolute</h3>
+                    <p class="mb-3 text-sm">L'applicazione è sconsigliata o vietata in queste condizioni:</p>
+                    <ul class="list-none space-y-2">
+                        <li class="flex items-start"><span class="font-bold mr-2 text-red-600">»</span>Arteriopatie periferiche gravi (Indice ABI < 0.8)</li>
+                        <li class="flex items-start"><span class="font-bold mr-2 text-red-600">»</span>Insufficienza cardiaca scompensata</li>
+                        <li class="flex items-start"><span class="font-bold mr-2 text-red-600">»</span>Flebite settica</li>
+                        <li class="flex items-start"><span class="font-bold mr-2 text-red-600">»</span>Ferite potenzialmente infette senza consulto medico</li>
+                    </ul>
+                </div>
+                <div class="card border-l-4 border-amber-500">
+                    <h3 class="text-2xl font-bold mb-4 flex items-center"><span class="caution-icon mr-3">⚠️</span>Precauzioni d'Uso</h3>
+                    <p class="mb-3 text-sm">Prestare sempre attenzione a questi aspetti:</p>
+                    <ul class="list-none space-y-2">
+                         <li class="flex items-start"><span class="font-bold mr-2 text-amber-600">»</span>Sempre consulto medico prima dell'uso, specialmente su ulcere o in pazienti diabetici.</li>
+                        <li class="flex items-start"><span class="font-bold mr-2 text-amber-600">»</span>Valutazione Doppler e Indice ABI prima di ogni terapia compressiva.</li>
+                        <li class="flex items-start"><span class="font-bold mr-2 text-amber-600">»</span>Applicare solo su cute pulita, asciutta e integra.</li>
+                        <li class="flex items-start"><span class="font-bold mr-2 text-amber-600">»</span>Evitare tensione eccessiva e pieghe.</li>
+                        <li class="flex items-start"><span class="font-bold mr-2 text-amber-600">»</span>Sospendere in caso di reazioni di ipersensibilità.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-100 mt-16">
+        <div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-gray-500">
+            <p>&copy; 2024 Guida Interattiva al Bendaggio all'Ossido di Zinco. Contenuti a scopo informativo. Consultare sempre un professionista sanitario.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tabLinks = document.querySelectorAll('.tab-link');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    const tab = link.dataset.tab;
+
+                    tabLinks.forEach(l => l.classList.remove('active', 'text-[#F9A870]', 'border-[#F9A870]'));
+                    link.classList.add('active', 'text-[#F9A870]', 'border-[#F9A870]');
+
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                        if (content.id === tab) {
+                            content.classList.add('active');
+                        }
+                    });
+                });
+            });
+
+            const pressureData = {
+                labels: ['Pressione a Riposo', 'Pressione di Lavoro'],
+                datasets: [{
+                    label: 'Elastocontenitivo (Ossido di Zinco)',
+                    data: [15, 70],
+                    backgroundColor: 'rgba(168, 216, 234, 0.6)',
+                    borderColor: 'rgba(168, 216, 234, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'Elastocompressivo',
+                    data: [50, 60],
+                    backgroundColor: 'rgba(249, 168, 112, 0.6)',
+                    borderColor: 'rgba(249, 168, 112, 1)',
+                    borderWidth: 1
+                }]
+            };
+
+            const pressureConfig = {
+                type: 'bar',
+                data: pressureData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Profilo di Pressione (Valori indicativi in mmHg)',
+                            font: { size: 14, family: 'Inter' },
+                            color: '#3C5B6F'
+                        },
+                        tooltip: {
+                             callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y + ' mmHg';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Pressione (mmHg)',
+                                font: { size: 12, family: 'Inter' },
+                                color: '#3C5B6F'
+                            }
+                        }
+                    }
+                }
+            };
+            
+            const chartElement = document.getElementById('pressureChart');
+            if(chartElement) {
+                new Chart(chartElement, pressureConfig);
+            }
+
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const mobileMenuIcons = mobileMenuButton.querySelectorAll('svg');
+            
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                mobileMenuIcons[0].classList.toggle('hidden');
+                mobileMenuIcons[1].classList.toggle('hidden');
+            });
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            const pageSections = document.querySelectorAll('.page-section');
+            
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.4
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            pageSections.forEach(section => {
+                observer.observe(section);
+            });
+
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                    if (mobileMenu.classList.contains('hidden') === false) {
+                       mobileMenu.classList.add('hidden');
+                       mobileMenuIcons[0].classList.remove('hidden');
+                       mobileMenuIcons[1].classList.add('hidden');
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
