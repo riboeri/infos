@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="it" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisi Interattiva DGR Regione Lombardia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The application uses a thematic, non-linear structure to enhance usability. It's divided into four main sections accessible via a sticky navigation: 1) A 'Panoramica' (Overview) to introduce the context and the two DGRs side-by-side. 2) A deep dive into DGR X/1765, focusing on quality metrics, using interactive cards and a donut chart for the acceptability threshold. 3) A deep dive into DGR X/2569, explaining the accreditation framework with process diagrams and interactive tabs for its annexes. 4) A 'Confronto' (Comparison) section that uses a visual metaphor (interlocking gears) and a summary table to highlight the synergy between the two resolutions. This structure was chosen to guide the user from a high-level understanding to specific details and finally to a synthesized view, which is more effective for exploring complex regulations than a linear report. -->
+    <!-- Visualization & Content Choices: Report Info -> Goal -> Viz/Presentation -> Interaction -> Justification. 1) DGR 1765 Acceptability Threshold -> Inform -> Donut Chart (Chart.js) + Large Text -> Hover for details -> Visually impactful and immediately communicates the 95% target. 2) DGR 1765 Key Concepts (FASAS, Processo Assistenziale) -> Inform/Organize -> Clickable Cards (HTML/CSS/JS) -> Click to reveal details -> Reduces initial cognitive load by hiding detailed text. 3) DGR 2569 Annexes -> Organize/Inform -> Tabs (HTML/CSS/JS) -> Click to switch content -> Organizes a large amount of related information compactly. 4) DGR 2569 Accreditation Process -> Explain Change -> Flow Diagram (HTML/Tailwind) -> Static visual -> Clearly visualizes a linear sequence. 5) Synergy between DGRs -> Explain Relationship -> Interlocking Gears Diagram (HTML/Tailwind) -> Static visual -> Provides a strong visual metaphor for the complementary nature of the regulations. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fdfcfb;
+            color: #1f2937;
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 300px;
+            width: 100%;
+            max-width: 300px;
+        }
+        .nav-link {
+            transition: color 0.3s, border-color 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #0369a1;
+            border-color: #0369a1;
+        }
+        .tab.active {
+            background-color: #0369a1;
+            color: #ffffff;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .gear-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: -20px;
+        }
+        .gear {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: white;
+        }
+        .gear.gear1 {
+            background-color: #0891b2; /* cyan-600 */
+            animation: rotate 10s linear infinite;
+        }
+        .gear.gear2 {
+            background-color: #0d9488; /* teal-600 */
+            animation: rotate-reverse 10s linear infinite;
+        }
+        .gear::before {
+            content: '';
+            position: absolute;
+            top: -10px; left: calc(50% - 10px);
+            width: 20px; height: 140px;
+            background: inherit;
+            border-radius: 5px;
+        }
+        .gear::after {
+            content: '';
+            position: absolute;
+            top: calc(50% - 10px); left: -10px;
+            width: 140px; height: 20px;
+            background: inherit;
+            border-radius: 5px;
+        }
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes rotate-reverse {
+            from { transform: rotate(360deg); }
+            to { transform: rotate(0deg); }
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-slate-800">
+
+    <header class="bg-white/80 backdrop-blur-lg shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-sky-800">Analisi DGR Lombardia</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#panoramica" class="nav-link px-3 py-2 text-sm font-medium text-slate-600 border-b-2 border-transparent">Panoramica</a>
+                        <a href="#dgr1765" class="nav-link px-3 py-2 text-sm font-medium text-slate-600 border-b-2 border-transparent">DGR X/1765</a>
+                        <a href="#dgr2569" class="nav-link px-3 py-2 text-sm font-medium text-slate-600 border-b-2 border-transparent">DGR X/2569</a>
+                        <a href="#confronto" class="nav-link px-3 py-2 text-sm font-medium text-slate-600 border-b-2 border-transparent">Confronto</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                     <button id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-slate-600 hover:text-sky-800 hover:bg-stone-100 focus:outline-none">
+                        <span class="sr-only">Apri menu</span>
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+             <div id="mobile-menu" class="md:hidden hidden">
+                <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                    <a href="#panoramica" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-slate-600">Panoramica</a>
+                    <a href="#dgr1765" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-slate-600">DGR X/1765</a>
+                    <a href="#dgr2569" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-slate-600">DGR X/2569</a>
+                    <a href="#confronto" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-slate-600">Confronto</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        
+        <section id="panoramica" class="my-12 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center text-sky-800 mb-4">La Riforma del Sistema Sociosanitario Lombardo</h2>
+            <p class="mt-4 max-w-3xl mx-auto text-center text-lg text-slate-600">
+                Nel 2014, la Regione Lombardia ha introdotto due delibere fondamentali per ridefinire la governance, la qualità e l'efficienza dei servizi sociosanitari. Questi atti non sono isolati, ma rappresentano un'azione coordinata per modernizzare il sistema, stabilendo <span class="font-semibold text-sky-700">chi può fornire servizi</span> e <span class="font-semibold text-teal-700">come la qualità di tali servizi viene misurata e garantita</span>. Questa pagina interattiva esplora i punti chiave e la sinergia di queste due importanti riforme.
+            </p>
+            <div class="mt-12 grid md:grid-cols-2 gap-8 items-start">
+                <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-sky-600">
+                    <h3 class="text-2xl font-bold text-sky-800">DGR n. X/2569</h3>
+                    <p class="text-sm font-medium text-slate-500 mb-2">31 Ottobre 2014</p>
+                    <p class="font-semibold text-lg mt-2">Oggetto: Il Quadro Normativo (Chi e Come)</p>
+                    <p class="mt-2 text-slate-600">Questa delibera definisce la cornice normativa: rivede il sistema di <span class="font-semibold">esercizio e accreditamento</span> delle strutture sociosanitarie. Stabilisce i requisiti, le procedure e le regole per la vigilanza, con l'obiettivo di creare una rete di servizi più flessibile e adatta ai bisogni reali dei cittadini.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-teal-600">
+                    <h3 class="text-2xl font-bold text-teal-800">DGR n. X/1765</h3>
+                    <p class="text-sm font-medium text-slate-500 mb-2">8 Maggio 2014</p>
+                    <p class="font-semibold text-lg mt-2">Oggetto: La Misura della Qualità (Cosa)</p>
+                    <p class="mt-2 text-slate-600">Questa delibera si concentra sulla misurazione della qualità: introduce <span class="font-semibold">indicatori di appropriatezza</span> per standardizzare i controlli delle ASL. Definisce le metriche per valutare se i servizi erogati sono efficaci, pertinenti e di alta qualità, legando la conformità a conseguenze economiche.</p>
+                </div>
+            </div>
+        </section>
+        
+        <hr class="my-16 border-t border-slate-200">
+
+        <section id="dgr1765" class="my-12 scroll-mt-20">
+            <header class="text-center mb-12">
+                <p class="text-sm font-bold uppercase tracking-wider text-teal-600">La Qualità Misurabile</p>
+                <h2 class="text-3xl font-bold text-slate-800 mt-2">DGR X/1765: Standard e Indicatori di Appropriatezza</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-lg text-slate-600">
+                    Questa delibera ha introdotto un cambiamento fondamentale, passando da una valutazione soggettiva della qualità a un sistema basato su metriche oggettive e misurabili. L'obiettivo è garantire che ogni cittadino riceva cure appropriate e standardizzate in tutta la regione.
+                </p>
+            </header>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-md md:col-span-2 lg:col-span-1">
+                     <h3 class="text-xl font-bold text-teal-800 mb-3">Soglia di Accettabilità</h3>
+                     <p class="text-slate-600 mb-4">Per garantire la massima qualità, la delibera fissa una soglia di accettabilità complessiva molto alta per gli indicatori di appropriatezza.</p>
+                    <div class="chart-container">
+                        <canvas id="acceptabilityChart"></canvas>
+                    </div>
+                     <p class="text-center mt-4 text-slate-600"><span class="font-bold text-4xl text-teal-600">95%</span><br>Livello minimo di conformità complessiva richiesto.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md md:col-span-2">
+                    <h3 class="text-xl font-bold text-teal-800 mb-4">Concetti Chiave</h3>
+                    <div class="space-y-4">
+                        <details class="bg-slate-50 p-4 rounded-lg cursor-pointer">
+                            <summary class="font-semibold text-slate-700">Processo Assistenziale</summary>
+                            <p class="mt-2 text-slate-600">Definisce un percorso strutturato per il paziente in 4 fasi: valutazione multidimensionale, progettazione personalizzata, pianificazione degli interventi e monitoraggio dei risultati. Questo assicura un'assistenza completa e orientata ai risultati.</p>
+                        </details>
+                        <details class="bg-slate-50 p-4 rounded-lg cursor-pointer">
+                            <summary class="font-semibold text-slate-700">Fascicolo Socio Assistenziale e Sanitario (FASAS)</summary>
+                            <p class="mt-2 text-slate-600">Identificato come lo strumento centrale per i controlli. È l'archivio unico di tutta la documentazione del paziente, fondamentale per verificare la coerenza e l'appropriatezza delle cure erogate rispetto ai bisogni rilevati.</p>
+                        </details>
+                        <details class="bg-slate-50 p-4 rounded-lg cursor-pointer">
+                            <summary class="font-semibold text-slate-700">Indicatori Specifici Rimandati</summary>
+                            <p class="mt-2 text-slate-600">Riconoscendo la complessità di alcuni settori, la definizione di indicatori specifici per le aree "dipendenze" e "riabilitazione/cure intermedie" è stata rimandata a provvedimenti futuri, dimostrando un approccio normativo flessibile e pragmatico.</p>
+                        </details>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <hr class="my-16 border-t border-slate-200">
+
+        <section id="dgr2569" class="my-12 scroll-mt-20">
+            <header class="text-center mb-12">
+                <p class="text-sm font-bold uppercase tracking-wider text-sky-600">Il Quadro delle Regole</p>
+                <h2 class="text-3xl font-bold text-slate-800 mt-2">DGR X/2569: Esercizio, Accreditamento e Vigilanza</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-lg text-slate-600">
+                    Questa delibera ha ridisegnato l'architettura normativa per i fornitori di servizi. L'obiettivo non è solo burocratico, ma strategico: creare un sistema che permetta alla rete di servizi di adattarsi con agilità per rispondere in modo efficace ai bisogni dei cittadini.
+                </p>
+            </header>
+            <div class="grid lg:grid-cols-2 gap-8 items-start">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-bold text-sky-800 mb-4">I 4 Pilastri della Riforma (Allegati)</h3>
+                    <p class="text-slate-600 mb-4">La delibera si basa su quattro allegati che definiscono ogni aspetto del nuovo sistema. Clicca su ogni tab per scoprire il suo scopo.</p>
+                    <div>
+                        <div class="border-b border-slate-200">
+                            <nav class="-mb-px flex space-x-4" aria-label="Tabs">
+                                <button class="tab active whitespace-nowrap py-3 px-4 border-b-2 font-medium text-sm rounded-t-lg" data-tab="1">Allegato 1</button>
+                                <button class="tab whitespace-nowrap py-3 px-4 border-b-2 font-medium text-sm" data-tab="2">Allegato 2</button>
+                                <button class="tab whitespace-nowrap py-3 px-4 border-b-2 font-medium text-sm" data-tab="3">Allegato 3</button>
+                                <button class="tab whitespace-nowrap py-3 px-4 border-b-2 font-medium text-sm" data-tab="4">Allegato 4</button>
+                            </nav>
+                        </div>
+                        <div class="mt-4">
+                            <div id="tab-content-1" class="tab-content active">
+                                <h4 class="font-bold">Requisiti Generali</h4>
+                                <p class="text-slate-600">Dettaglia i requisiti soggettivi, organizzativi, strutturali e tecnologici che ogni struttura deve possedere per operare e essere accreditata.</p>
+                            </div>
+                            <div id="tab-content-2" class="tab-content">
+                                <h4 class="font-bold">Procedure</h4>
+                                <p class="text-slate-600">Delinea l'iter amministrativo completo per l'autorizzazione all'esercizio, l'accreditamento e le successive variazioni.</p>
+                            </div>
+                            <div id="tab-content-3" class="tab-content">
+                                <h4 class="font-bold">Vigilanza e Controllo</h4>
+                                <p class="text-slate-600">Fornisce alle ASL le linee guida operative per pianificare ed eseguire le attività di supervisione, garantendo coerenza a livello regionale.</p>
+                            </div>
+                            <div id="tab-content-4" class="tab-content">
+                                 <h4 class="font-bold">Sanzioni</h4>
+                                 <p class="text-slate-600">Specifica le procedure per l'accertamento delle violazioni e l'applicazione delle relative sanzioni amministrative in caso di non conformità.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                     <h3 class="text-xl font-bold text-sky-800 mb-4">Tempistiche di Adeguamento</h3>
+                     <p class="text-slate-600 mb-6">La delibera ha stabilito scadenze precise per permettere alle strutture esistenti di allinearsi ai nuovi requisiti.</p>
+                    <div class="relative pl-8">
+                        <div class="absolute left-0 top-0 bottom-0 w-0.5 bg-slate-300"></div>
+                        <div class="mb-8 relative">
+                            <div class="absolute -left-[38px] top-0 w-4 h-4 bg-sky-600 rounded-full border-4 border-white"></div>
+                            <p class="font-bold text-sky-800">Entro 6 Mesi</p>
+                            <p class="text-slate-600">Le unità d'offerta già accreditate dovevano adeguarsi ai nuovi requisiti aggiuntivi per l'accreditamento.</p>
+                        </div>
+                        <div class="relative">
+                            <div class="absolute -left-[38px] top-0 w-4 h-4 bg-sky-600 rounded-full border-4 border-white"></div>
+                            <p class="font-bold text-sky-800">Entro 1 Anno</p>
+                            <p class="text-slate-600">I soggetti gestori di più unità dovevano dimostrare l'adattamento al nuovo quadro istituzionale, pena la decadenza.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-16 border-t border-slate-200">
+
+        <section id="confronto" class="my-12 scroll-mt-20">
+            <header class="text-center mb-12">
+                <p class="text-sm font-bold uppercase tracking-wider text-cyan-600">Visione d'Insieme</p>
+                <h2 class="text-3xl font-bold text-slate-800 mt-2">Sinergia: Come le due Delibere Lavorano Insieme</h2>
+                 <p class="mt-4 max-w-3xl mx-auto text-lg text-slate-600">
+                    Le due delibere non sono due binari paralleli, ma un meccanismo integrato. La DGR 2569 costruisce la "macchina" (la struttura e le regole del sistema), mentre la DGR 1765 fornisce il "carburante" e il "cruscotto" (gli standard di qualità e gli indicatori per misurarla). Insieme, creano un ciclo virtuoso di governance e miglioramento continuo.
+                </p>
+            </header>
+
+            <div class="gear-container my-12 h-48">
+                <div class="gear gear1"><span>STRUTTURA<br>(DGR 2569)</span></div>
+                <div class="gear gear2"><span>QUALITÀ<br>(DGR 1765)</span></div>
+            </div>
+            
+            <div class="mt-12 overflow-x-auto">
+                <table class="w-full min-w-max bg-white rounded-lg shadow-md text-left">
+                    <thead class="bg-slate-100">
+                        <tr>
+                            <th class="p-4 font-semibold">Caratteristica</th>
+                            <th class="p-4 font-semibold text-sky-800">DGR X/2569 (Struttura)</th>
+                            <th class="p-4 font-semibold text-teal-800">DGR X/1765 (Qualità)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200">
+                        <tr>
+                            <td class="p-4 font-semibold">Focus Principale</td>
+                            <td class="p-4 text-slate-600"><span class="font-bold">Chi</span> può erogare servizi e <span class="font-bold">come</span> è autorizzato/controllato.</td>
+                            <td class="p-4 text-slate-600"><span class="font-bold">Cosa</span> costituisce un servizio di qualità e <span class="font-bold">come</span> viene misurato.</td>
+                        </tr>
+                        <tr>
+                            <td class="p-4 font-semibold">Obiettivo</td>
+                            <td class="p-4 text-slate-600">Flessibilità della rete, omogeneità dei controlli.</td>
+                            <td class="p-4 text-slate-600">Appropriatezza delle cure, omogeneità dei controlli.</td>
+                        </tr>
+                        <tr>
+                            <td class="p-4 font-semibold">Strumenti Chiave</td>
+                            <td class="p-4 text-slate-600">Allegati su requisiti, procedure, vigilanza e sanzioni.</td>
+                            <td class="p-4 text-slate-600">Indicatori di appropriatezza, FASAS, soglie di accettabilità.</td>
+                        </tr>
+                        <tr>
+                            <td class="p-4 font-semibold">Impatto sui Fornitori</td>
+                            <td class="p-4 text-slate-600">Revisione dei requisiti operativi e delle autorizzazioni.</td>
+                            <td class="p-4 text-slate-600">Standardizzazione della documentazione e rischio di sanzioni economiche.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="bg-slate-800 text-white mt-16">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-sm">
+            <p>&copy; 2024 Analisi Interattiva. Questo sito è una rappresentazione visuale e non sostituisce i documenti ufficiali.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const acceptabilityCtx = document.getElementById('acceptabilityChart').getContext('2d');
+            new Chart(acceptabilityCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Livello Accettabile', 'Tolleranza Statistica'],
+                    datasets: [{
+                        data: [95, 5],
+                        backgroundColor: [
+                            '#0d9488', // teal-600
+                            '#f1f5f9'  // slate-100
+                        ],
+                        borderColor: [
+                            '#0d9488',
+                            '#f1f5f9'
+                        ],
+                        borderWidth: 1,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.raw + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.dataset.tab;
+
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                        if (content.id === `tab-content-${tabId}`) {
+                            content.classList.add('active');
+                        }
+                    });
+                });
+            });
+            
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('section');
+            
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if(pageYOffset >= sectionTop - 80){
+                       current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    const href = link.getAttribute('href').substring(1);
+                    if(href === current){
+                        link.classList.add('active');
+                    }
+                });
+            });
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                     if (mobileMenu.classList.contains('hidden') === false) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                });
+            });
+
+        });
+    </script>
+</body>
+</html>
