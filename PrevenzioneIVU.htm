@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="it" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prevenzione IVU in RSA - Dashboard Interattivo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals & Soft Blue -->
+    <!-- Application Structure Plan: Ho progettato un'architettura a dashboard tematico anziché lineare. La struttura è organizzata in sezioni logiche e orientate all'azione (Panoramica, Pilastri della Prevenzione, Riconoscimento, Protocolli) per permettere agli operatori sanitari di accedere rapidamente alle informazioni pertinenti. L'uso di tab e sezioni interattive riduce il carico cognitivo e migliora la navigazione, rendendo i complessi protocolli più digeribili e facili da consultare. Questa struttura prioritizza l'usabilità e l'applicazione pratica rispetto alla sequenza del report originale. -->
+    <!-- Visualization & Content Choices: 
+        - Panoramica (Goal: Informare/Comparare): Un grafico a barre (Chart.js) visualizza i principali fattori di rischio, rendendo immediato il confronto della loro importanza. I numeri chiave sono presentati in card per un impatto visivo immediato.
+        - Rischio Catetere (Goal: Mostrare il cambiamento): Un grafico a linee (Chart.js) illustra l'aumento giornaliero del rischio di batteriuria, sottolineando l'urgenza della rimozione del catetere.
+        - Pilastri della Prevenzione (Goal: Organizzare/Informare): Un sistema a tab (HTML/JS) organizza le strategie in categorie (Cura di base, Gestione cateteri, Approcci specifici), permettendo all'utente di concentrarsi su un'area alla volta.
+        - Sintomi (Goal: Comparare): Una tabella HTML mette a confronto i sintomi tipici e atipici, facilitando il riconoscimento clinico.
+        - Messaggi Chiave (Goal: Informare): Box di avviso (HTML/CSS) con colori a contrasto sono usati per evidenziare messaggi critici, come il non trattamento della batteriuria asintomatica, garantendo che non passino inosservati.
+        Tutte le scelte sono state fatte per massimizzare la chiarezza e l'engagement, senza usare SVG o Mermaid. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 40vh;
+        }
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 300px;
+                max-height: 50vh;
+            }
+        }
+        .tab-active {
+            border-color: #2563eb;
+            color: #2563eb;
+            font-weight: 600;
+            background-color: #dbeafe;
+        }
+        .tab-inactive {
+            border-color: transparent;
+            color: #4b5563;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content-active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-blue-700">Prevenzione IVU in RSA</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#overview" class="text-slate-600 hover:bg-slate-100 hover:text-slate-900 px-3 py-2 rounded-md text-sm font-medium">Panoramica</a>
+                        <a href="#pillars" class="text-slate-600 hover:bg-slate-100 hover:text-slate-900 px-3 py-2 rounded-md text-sm font-medium">Pilastri Prevenzione</a>
+                        <a href="#recognition" class="text-slate-600 hover:bg-slate-100 hover:text-slate-900 px-3 py-2 rounded-md text-sm font-medium">Riconoscimento</a>
+                        <a href="#protocols" class="text-slate-600 hover:bg-slate-100 hover:text-slate-900 px-3 py-2 rounded-md text-sm font-medium">Protocolli</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+
+        <!-- Sezione 1: Panoramica e Rischio -->
+        <section id="overview" class="mb-16 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-slate-900 mb-4 text-center">Una Minaccia Silenziosa nelle RSA</h2>
+            <p class="max-w-3xl mx-auto text-center text-slate-600 mb-10">
+                Le infezioni delle vie urinarie (IVU) sono una delle principali cause di morbilità e ospedalizzazione per gli anziani residenti in RSA. La loro presentazione spesso atipica rende la diagnosi difficile, ma una parte significativa di esse è prevenibile. Questo strumento interattivo esplora i fattori di rischio e le strategie chiave per una prevenzione efficace.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 items-center">
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="text-xl font-semibold text-slate-900 mb-4">Principali Fattori di Rischio</h3>
+                    <div class="chart-container">
+                        <canvas id="riskFactorChart"></canvas>
+                    </div>
+                </div>
+                <div class="space-y-6">
+                    <div class="bg-white p-6 rounded-xl shadow-md flex items-start space-x-4">
+                        <div class="flex-shrink-0 h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
+                           <span class="text-2xl text-red-600">⚠️</span>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-slate-800">Cateterizzazione Urinaria</h4>
+                            <p class="text-slate-600">Il fattore di rischio più significativo. Il rischio di batteriuria aumenta del 3-8% per ogni giorno di permanenza del catetere.</p>
+                        </div>
+                    </div>
+                     <div class="bg-white p-6 rounded-xl shadow-md flex items-start space-x-4">
+                        <div class="flex-shrink-0 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                           <span class="text-2xl text-blue-600">👵</span>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-slate-800">Declino Funzionale e Cognitivo</h4>
+                            <p class="text-slate-600">Ostacola l'autocura, la comunicazione dei sintomi e l'adesione ai protocolli di prevenzione come l'idratazione.</p>
+                        </div>
+                    </div>
+                     <div class="bg-white p-6 rounded-xl shadow-md flex items-start space-x-4">
+                        <div class="flex-shrink-0 h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center">
+                           <span class="text-2xl text-yellow-600">🦠</span>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-slate-800">Batteriuria Asintomatica (ASB)</h4>
+                            <p class="text-slate-600">Comune negli anziani, ma il suo trattamento non è raccomandato e aumenta il rischio di resistenze antibiotiche.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sezione 2: Pilastri della Prevenzione -->
+        <section id="pillars" class="mb-16 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-slate-900 mb-4 text-center">I Pilastri della Prevenzione</h2>
+            <p class="max-w-3xl mx-auto text-center text-slate-600 mb-10">
+                La prevenzione delle IVU si basa su un approccio multifattoriale che integra la cura quotidiana di base, una gestione rigorosa dei cateteri e l'uso di approcci specifici mirati. Esplora le strategie chiave in ogni area per ridurre il rischio di infezione.
+            </p>
+            
+            <div class="bg-white rounded-xl shadow-lg p-2 sm:p-4">
+                <div class="border-b border-slate-200">
+                    <nav class="-mb-px flex flex-wrap justify-center gap-2" aria-label="Tabs">
+                        <button class="tab-btn tab-active" data-tab="base-care">Cura di Base</button>
+                        <button class="tab-btn tab-inactive" data-tab="catheter">Gestione Cateteri</button>
+                        <button class="tab-btn tab-inactive" data-tab="specifics">Approcci Specifici</button>
+                    </nav>
+                </div>
+
+                <div class="py-6 px-2 sm:px-4">
+                    <!-- Tab Cura di Base -->
+                    <div id="base-care" class="tab-content tab-content-active">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="border border-slate-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-lg mb-2 flex items-center"><span class="text-2xl mr-2">💧</span> Idratazione</h4>
+                                <p class="text-slate-600">Garantire un'assunzione di liquidi adeguata (circa 2L/giorno) per favorire il lavaggio meccanico dei batteri. Il personale deve offrire attivamente liquidi e monitorare il bilancio idrico.</p>
+                            </div>
+                            <div class="border border-slate-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-lg mb-2 flex items-center"><span class="text-2xl mr-2">🛡️</span> Igiene Personale e Ambientale</h4>
+                                <p class="text-slate-600">Applicare le precauzioni standard a tutti i residenti. L'igiene delle mani e la pulizia perineale corretta (da avanti a dietro) sono fondamentali. Usare DPI e protocolli di pulizia ambientale rigorosi.</p>
+                            </div>
+                            <div class="border border-slate-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-lg mb-2 flex items-center"><span class="text-2xl mr-2">🚰</span> Gestione Incontinenza</h4>
+                                <p class="text-slate-600">Utilizzare prodotti assorbenti traspiranti e di alta qualità. Cambi frequenti e cura della pelle sono essenziali per prevenire la macerazione e la crescita batterica. Evitare il catetere per la sola gestione dell'incontinenza.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Tab Gestione Cateteri -->
+                    <div id="catheter" class="tab-content">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                            <div>
+                                <h4 class="font-semibold text-lg mb-2">Checklist per un Uso Appropriato</h4>
+                                <ul class="space-y-3 text-slate-700">
+                                    <li class="flex items-start"><span class="text-green-500 font-bold mr-2">✓</span> **Indicazioni corrette:** Usare solo per ritenzione acuta, ostruzione, immobilità forzata o cure di fine vita.</li>
+                                    <li class="flex items-start"><span class="text-red-500 font-bold mr-2">✗</span> **Uso inappropriato:** Mai come sostituto dell'assistenza, per comodità o per campioni di urina se il paziente può urinare.</li>
+                                    <li class="flex items-start"><span class="text-green-500 font-bold mr-2">✓</span> **Tecnica asettica:** Inserimento sterile "non-touch", igiene delle mani e campo sterile sono obbligatori.</li>
+                                    <li class="flex items-start"><span class="text-green-500 font-bold mr-2">✓</span> **Sistema chiuso:** Mantenere sempre un sistema di drenaggio chiuso. La sacca deve rimanere sotto il livello della vescica.</li>
+                                    <li class="flex items-start"><span class="text-red-500 font-bold mr-2">✗</span> **Pratiche da evitare:** Non cambiare i cateteri di routine. Non irrigare la vescica con antisettici.</li>
+                                    <li class="flex items-start"><span class="text-blue-500 font-bold mr-2">→</span> **Rivalutazione quotidiana:** La necessità del catetere va rivalutata ogni giorno per una rimozione tempestiva.</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-lg mb-2">Rischio di Batteriuria nel Tempo</h4>
+                                <p class="text-slate-600 mb-4">Ogni giorno di cateterizzazione aumenta drasticamente il rischio di infezione. La rimozione tempestiva è la strategia preventiva più efficace.</p>
+                                <div class="chart-container" style="height: 300px; max-height: 35vh;">
+                                    <canvas id="cautiRiskChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Tab Approcci Specifici -->
+                    <div id="specifics" class="tab-content">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div class="border border-slate-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-lg mb-2">Mirtillo Rosso</h4>
+                                <p class="text-slate-600">Può aiutare a prevenire le IVU ricorrenti impedendo l'adesione batterica. Usare succo non zuccherato o capsule come misura preventiva, non per trattare un'infezione attiva. L'evidenza è moderata.</p>
+                            </div>
+                            <div class="border border-slate-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-lg mb-2">Estrogeni Vaginali</h4>
+                                <p class="text-slate-600">Nelle donne in post-menopausa, la terapia locale con estrogeni contrasta l'atrofia della mucosa e riduce significativamente le IVU ricorrenti. È un intervento mirato ed efficace.</p>
+                            </div>
+                            <div class="border border-slate-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-lg mb-2">Strategie Emergenti</h4>
+                                <p class="text-slate-600">Probiotici, metenamina ippurato e vaccini specifici sono opzioni promettenti in fase di studio per ridurre la dipendenza dagli antibiotici nella profilassi delle IVU ricorrenti.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Sezione 3: Riconoscimento e Diagnosi -->
+        <section id="recognition" class="mb-16 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-slate-900 mb-4 text-center">Riconoscimento e Diagnosi Corretta</h2>
+             <p class="max-w-3xl mx-auto text-center text-slate-600 mb-10">
+                Negli anziani, i sintomi di IVU sono spesso vaghi e atipici. Riconoscere questi segnali è fondamentale, ma è altrettanto cruciale evitare il sovra-trattamento, specialmente della batteriuria asintomatica, per combattere la resistenza agli antibiotici.
+            </p>
+
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-800 p-6 rounded-r-lg mb-10 shadow-lg">
+                <h3 class="font-bold text-xl">Messaggio Chiave: Non Trattare la Batteriuria Asintomatica (ASB)</h3>
+                <p class="mt-2">La presenza di batteri nelle urine senza sintomi (ASB) è comune negli anziani e nei pazienti con catetere. Eseguire screening e trattare l'ASB con antibiotici **non è raccomandato**: non migliora gli esiti e aumenta in modo significativo il rischio di sviluppare batteri multi-resistenti. La diagnosi di IVU deve essere **clinica**, basata sui sintomi.</p>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="p-6">
+                   <h3 class="text-xl font-semibold text-slate-900 mb-4 text-center">Confronto dei Sintomi di IVU</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-100">
+                            <tr>
+                                <th class="p-4 font-semibold text-slate-700">Sintomi Tipici</th>
+                                <th class="p-4 font-semibold text-slate-700">Sintomi Atipici/Aspecifici (Comuni negli anziani)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200">
+                            <tr>
+                                <td class="p-4 text-slate-600">Dolore o bruciore durante la minzione</td>
+                                <td class="p-4 text-slate-800 font-medium">Alterazione acuta dello stato mentale / Delirium</td>
+                            </tr>
+                            <tr>
+                                <td class="p-4 text-slate-600">Bisogno persistente e frequente di urinare</td>
+                                <td class="p-4 text-slate-800 font-medium">Febbre improvvisa (spesso senza altri sintomi)</td>
+                            </tr>
+                            <tr>
+                                <td class="p-4 text-slate-600">Dolore al basso ventre o alla schiena</td>
+                                <td class="p-4 text-slate-800 font-medium">Malessere generale, stanchezza, debolezza</td>
+                            </tr>
+                            <tr>
+                                <td class="p-4 text-slate-600">Urina torbida, maleodorante o con sangue</td>
+                                <td class="p-4 text-slate-800 font-medium">Aumento o insorgenza improvvisa di incontinenza</td>
+                            </tr>
+                             <tr>
+                                <td class="p-4 text-slate-600">Febbre e brividi (se l'infezione è ai reni)</td>
+                                <td class="p-4 text-slate-800 font-medium">Nausea, vertigini o perdita di appetito</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sezione 4: Protocolli e Cultura della Sicurezza -->
+        <section id="protocols" class="scroll-mt-20">
+            <h2 class="text-3xl font-bold text-slate-900 mb-4 text-center">Protocolli e Cultura della Sicurezza</h2>
+             <p class="max-w-3xl mx-auto text-center text-slate-600 mb-10">
+                La prevenzione efficace delle IVU non è solo una serie di compiti, ma un cambiamento culturale e organizzativo. Richiede programmi strutturati, formazione continua e un impegno costante da parte di tutta la struttura per garantire la sicurezza del paziente.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h4 class="font-semibold text-lg mb-2">Programmi di Controllo Infezioni</h4>
+                    <p class="text-slate-600">Implementare programmi formali di sorveglianza e controllo, inclusa la raccolta dati sui tassi di infezione per monitorare l'efficacia delle strategie e identificare aree di miglioramento.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h4 class="font-semibold text-lg mb-2">Antimicrobial Stewardship (AMS)</h4>
+                    <p class="text-slate-600">Adottare un programma di AMS per promuovere l'uso appropriato degli antibiotici, basato su diagnosi cliniche corrette e dati di sensibilità locali, con l'obiettivo primario di combattere la resistenza.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h4 class="font-semibold text-lg mb-2">Formazione e Audit Continui</h4>
+                    <p class="text-slate-600">La formazione pratica e continua del personale su tutti i protocolli (igiene, cateteri) è essenziale. Audit regolari sulla conformità aiutano a mantenere alti standard e a correggere le deviazioni.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-slate-300 mt-16">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-sm">
+            <p>Questo strumento interattivo è basato su una sintesi di linee guida e ricerche sulla prevenzione delle IVU.</p>
+            <p>&copy; 2025 - Realizzato a scopo informativo.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const riskFactorData = {
+                labels: ['Cateterizzazione', 'Incontinenza', 'Comorbilità', 'Declino Cognitivo', 'Immobilità'],
+                datasets: [{
+                    label: 'Impatto sul Rischio di IVU',
+                    data: [95, 75, 70, 65, 50],
+                    backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                    borderColor: 'rgba(37, 99, 235, 1)',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                }]
+            };
+
+            const riskFactorConfig = {
+                type: 'bar',
+                data: riskFactorData,
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` Indice di Rischio: ${context.raw}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#e2e8f0'
+                            },
+                             ticks: { color: '#475569' }
+                        },
+                        y: {
+                            grid: {
+                                display: false
+                            },
+                             ticks: { color: '#475569' }
+                        }
+                    }
+                }
+            };
+
+            const riskFactorChartCtx = document.getElementById('riskFactorChart').getContext('2d');
+            new Chart(riskFactorChartCtx, riskFactorConfig);
+
+            const cautiRiskData = {
+                labels: ['Giorno 0', 'Giorno 5', 'Giorno 10', 'Giorno 15', 'Giorno 20', 'Giorno 25', 'Giorno 30'],
+                datasets: [{
+                    label: 'Probabilità di Batteriuria (%)',
+                    data: [0, 28, 55, 75, 89, 96, 100],
+                    fill: true,
+                    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                    borderColor: 'rgba(220, 38, 38, 1)',
+                    tension: 0.3,
+                    pointBackgroundColor: 'rgba(220, 38, 38, 1)'
+                }]
+            };
+
+            const cautiRiskConfig = {
+                type: 'line',
+                data: cautiRiskData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                             callbacks: {
+                                label: function(context) {
+                                    return ` Rischio di infezione: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                             ticks: {
+                                callback: function(value) {
+                                    return value + '%'
+                                },
+                                color: '#475569'
+                            },
+                            grid: {
+                                color: '#e2e8f0'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: { color: '#475569' }
+                        }
+                    }
+                }
+            };
+            const cautiRiskChartCtx = document.getElementById('cautiRiskChart').getContext('2d');
+            new Chart(cautiRiskChartCtx, cautiRiskConfig);
+
+
+            const tabs = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const target = tab.getAttribute('data-tab');
+
+                    tabs.forEach(t => {
+                        t.classList.remove('tab-active');
+                        t.classList.add('tab-inactive');
+                    });
+                    tab.classList.remove('tab-inactive');
+                    tab.classList.add('tab-active');
+
+                    tabContents.forEach(content => {
+                        content.classList.remove('tab-content-active');
+                    });
+                    document.getElementById(target).classList.add('tab-content-active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
