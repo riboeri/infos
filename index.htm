@@ -3,72 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pagina Iniziale</title>
+    <title>Menù Documenti Medici</title>
+    <!-- Tailwind CSS CDN per uno stile di base -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter per una tipografia moderna -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        /* Stili per il corpo della pagina */
         body {
             font-family: 'Inter', sans-serif;
+            background-color: #F0F4F8; /* Sfondo leggermente grigio */
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            background-color: #F7FFF7; /* Light Mint from the Energetic & Playful palette */
-            color: #1A535C; /* Dark Teal from the Energetic & Playful palette */
+            min-height: 100vh; /* Altezza minima per centrare verticalmente */
+            margin: 0;
+            padding: 20px; /* Padding generale per i bordi */
+            box-sizing: border-box; /* Include padding e border nella larghezza */
         }
-        .container {
-            background-color: white;
-            padding: 2.5rem;
-            border-radius: 0.75rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        /* Stili per il contenitore principale del menù */
+        .menu-container {
+            background-color: #FFFFFF; /* Sfondo bianco */
+            padding: 30px;
+            border-radius: 12px; /* Angoli arrotondati */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Ombra leggera */
+            width: 100%;
+            max-width: 500px; /* Larghezza massima per il menù */
             text-align: center;
-            max-width: 500px;
-            width: 90%;
         }
-        .link-button {
-            display: inline-block;
-            background-color: #FF6B6B; /* Coral Red from the Energetic & Playful palette */
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 0.5rem;
+        /* Stili per il titolo del menù */
+        h1 {
+            color: #2C3E50; /* Blu scuro per il titolo */
+            margin-bottom: 25px;
+            font-size: 2.25rem; /* Dimensione grande per il titolo */
+            font-weight: 700; /* Grassetto */
+        }
+        /* Stili per la lista dei link */
+        ul {
+            list-style: none; /* Rimuove i pallini */
+            padding: 0;
+            margin: 0;
+        }
+        /* Stili per ogni elemento della lista */
+        li {
+            margin-bottom: 15px; /* Spazio tra i link */
+        }
+        /* Stili per i pulsanti dei link */
+        a {
+            display: block; /* Ogni link come blocco per occupare la larghezza */
+            padding: 14px 20px;
+            background-color: #3498DB; /* Blu vivace */
+            color: white; /* Testo bianco */
+            text-decoration: none; /* Rimuove sottolineatura */
+            border-radius: 8px; /* Angoli arrotondati */
+            transition: background-color 0.3s ease, transform 0.2s ease; /* Effetto transizione */
+            font-size: 1.1rem;
             font-weight: 600;
-            text-decoration: none;
-            transition: background-color 0.3s ease;
         }
-        .link-button:hover {
-            background-color: #E05252; /* Slightly darker Coral Red on hover */
+        /* Effetto hover per i pulsanti dei link */
+        a:hover {
+            background-color: #2980B9; /* Blu più scuro all'hover */
+            transform: translateY(-3px); /* Leggero sollevamento */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* Ombra più pronunciata */
+        }
+
+        /* Responsive design per schermi più piccoli */
+        @media (max-width: 768px) {
+            .menu-container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.75rem;
+            }
+            a {
+                font-size: 1rem;
+                padding: 12px 15px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1 class="text-3xl font-bold mb-6">Benvenuto!</h1>
-        <p class="text-lg mb-8">Clicca sul pulsante qui sotto per accedere all'infografica sulla Sindrome Demenza.</p>
-        <a href="demenza.htm" class="link-button">Vai all'Infografica Demenza</a>
-    </div>
-    <div class="container">
-        <p class="text-lg mb-8">MiniCog</p>
-        <a href="MiniCog.htm" class="link-button">Vai al file del MiniCog</a>
-    </div>
-    <div class="container">
-        <p class="text-lg mb-8">RGA</p>
-        <a href="rga.htm" class="link-button">Vai al file del Rapid Geriatric Assesment</a>
-    </div>
-    <div class="container">
-        <p class="text-lg mb-8">Bendaggio all'ossido di zinco</p>
-        <a href="zinco.htm" class="link-button">Vai al file sul bendaggio</a>
-    </div>
-    <div class="container">
-        <p class="text-lg mb-8">DGR appropriatezza</p>
-        <a href="DGR.htm" class="link-button">Vai al file sulle DGR</a>
-    </div>
-     <div class="container">
-        <p class="text-lg mb-8">Prevenzione IVU</p>
-        <a href="PrevenzioneIVU.htm" class="link-button">Vai al file sulla prevenzione delle IVU</a>
-    </div>
-    <div class="container">
-        <p class="text-lg mb-8">Appunti di psicologia</p>
-        <a href="psico.htm" class="link-button">Vai al file sulla psicologia clinica</a>
+    <div class="menu-container">
+        <h1>Menù Documenti Medici</h1>
+        <ul>
+            <li><a href="demenza.htm" target="_blank" rel="noopener noreferrer">Infografica Sindrome Demenza</a></li>
+            <li><a href="MiniCog.htm" target="_blank" rel="noopener noreferrer">MiniCog</a></li>
+            <li><a href="rga.htm" target="_blank" rel="noopener noreferrer">Rapid Geriatric Assessment (RGA)</a></li>
+            <li><a href="zinco.htm" target="_blank" rel="noopener noreferrer">Bendaggio all'Ossido di Zinco</a></li>
+            <li><a href="DGR.htm" target="_blank" rel="noopener noreferrer">DGR Appropriatezza</a></li>
+            <li><a href="PrevenzioneIVU.htm" target="_blank" rel="noopener noreferrer">Prevenzione IVU</a></li>
+            <li><a href="psico.htm" target="_blank" rel="noopener noreferrer">Appunti di Psicologia Clinica</a></li>
+        </ul>
     </div>
 </body>
 </html>
