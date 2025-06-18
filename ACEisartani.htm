@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confronto Interattivo: ACE-Inibitori vs. Sartani</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Clinical Calm -->
+    <!-- Application Structure Plan: Ho progettato l'applicazione come un dashboard a schede per separare logicamente i diversi aspetti del confronto (meccanismo, farmacocinetica, indicazioni, sicurezza). Questa struttura non lineare, a differenza di un report testuale, permette all'utente di accedere direttamente all'informazione di suo interesse. La sezione di farmacocinetica, ricca di dati, utilizza grafici e tabelle interattive per facilitare il confronto visivo tra i singoli farmaci, rendendo i dati quantitativi immediatamente comprensibili. Questa architettura è stata scelta per massimizzare la chiarezza e l'usabilità, trasformando un'analisi complessa in un'esperienza di apprendimento esplorativa. -->
+    <!-- Visualization & Content Choices: 
+        - Meccanismo d'Azione: Report Info -> Spiegare come agiscono i farmaci. Goal -> Chiarire la differenza fondamentale (produzione vs. blocco recettoriale). Viz/Presentation -> Diagramma HTML/CSS del sistema RAS. Interaction -> Evidenziazione visiva dei punti di azione. Justification -> Un diagramma è più intuitivo del testo. Library/Method -> HTML/Tailwind.
+        - Farmacocinetica: Report Info -> Dati su emivita, eliminazione, etc. Goal -> Confrontare i farmaci all'interno di ogni classe. Viz/Presentation -> Grafici a barre per l'emivita, grafici a ciambella per le vie di eliminazione, tabelle HTML. Interaction -> Selezione della classe di farmaci (ACE-i/Sartani) che aggiorna dinamicamente grafici e tabelle. Justification -> I grafici rendono i dati numerici facilmente confrontabili. L'interattività gestisce la complessità. Library/Method -> Chart.js (Canvas), Vanilla JS.
+        - Indicazioni: Report Info -> Usi terapeutici. Goal -> Distinguere usi comuni e specifici. Viz/Presentation -> Layout a schede con icone. Justification -> Le schede segmentano l'informazione per una facile scansione. Library/Method -> HTML/Tailwind.
+        - Sicurezza: Report Info -> Effetti avversi. Goal -> Enfatizzare la differenza chiave (tosse/angioedema). Viz/Presentation -> Liste comparative side-by-side con icone e un box di avviso prominente. Justification -> Il confronto diretto e l'enfasi visiva aiutano a memorizzare le differenze cruciali per la clinica. Library/Method -> HTML/Tailwind.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .tab-btn.active { 
+            border-color: #3b82f6; 
+            background-color: #eff6ff; 
+            color: #1e40af;
+            font-weight: 600;
+        }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container { height: 400px; }
+        }
+        .ras-pathway {
+            position: relative;
+            border: 2px dashed #9ca3af;
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+        .ras-pathway::after {
+            content: '↓';
+            position: absolute;
+            left: 50%;
+            bottom: -25px;
+            transform: translateX(-50%);
+            font-size: 1.5rem;
+            color: #6b7280;
+        }
+        .ras-step {
+            background-color: #f3f4f6;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+        .intervention-point {
+            position: relative;
+            margin: 1.5rem 0;
+            padding-left: 2rem;
+            border-left: 2px solid #ef4444;
+        }
+        .intervention-point.sartan {
+            border-left-color: #3b82f6;
+        }
+        .intervention-point::before {
+            content: '✕';
+            position: absolute;
+            left: -11px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+         .intervention-point.sartan::before {
+            background-color: #3b82f6;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-900">ACE-Inibitori vs. Sartani</h1>
+            <p class="mt-4 text-lg text-slate-600 max-w-3xl mx-auto">Un'analisi interattiva per esplorare le differenze farmacologiche chiave.</p>
+        </header>
+
+        <main class="bg-white rounded-xl shadow-lg p-4 sm:p-6 md:p-8">
+            <div class="mb-6 border-b border-slate-200">
+                <nav class="flex flex-wrap -mb-px" aria-label="Tabs">
+                    <button class="tab-btn active" data-tab="mechanism">Meccanismo d'Azione</button>
+                    <button class="tab-btn" data-tab="pharma">Farmacocinetica</button>
+                    <button class="tab-btn" data-tab="indications">Indicazioni & Efficacia</button>
+                    <button class="tab-btn" data-tab="safety">Sicurezza</button>
+                </nav>
+            </div>
+
+            <div>
+                <div id="mechanism" class="tab-pane active">
+                    <div class="p-2">
+                        <h2 class="text-2xl font-bold text-slate-800 mb-2">Come Agiscono sul Sistema Renina-Angiotensina (RAS)</h2>
+                        <p class="text-slate-600 mb-8">ACE-inibitori e Sartani modulano entrambi il sistema renina-angiotensina, cruciale per la regolazione della pressione, ma intervengono in punti diversi della cascata. Questa sezione illustra visivamente la loro azione distinta, che è alla base delle loro differenze in termini di efficacia e profilo di effetti collaterali.</p>
+                        
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div class="bg-red-50 p-6 rounded-lg border border-red-200">
+                                <h3 class="text-xl font-semibold text-red-800 mb-4">ACE-Inibitori</h3>
+                                <div class="ras-pathway">
+                                    <div class="ras-step">Angiotensina I</div>
+                                </div>
+                                <div class="intervention-point">
+                                    <p class="font-semibold">Blocco Enzimatico</p>
+                                    <p class="text-sm text-slate-600">Impediscono all'enzima ACE di convertire l'Angiotensina I in Angiotensina II, riducendone i livelli.</p>
+                                </div>
+                                <div class="text-center font-bold text-xl text-red-600">No Angiotensina II</div>
+                                <div class="mt-6">
+                                    <h4 class="font-semibold text-red-700">Effetto Aggiuntivo: Bradichinina</h4>
+                                    <p class="text-sm text-slate-600">Inibiscono anche la degradazione della bradichinina, un vasodilatatore. Questo accumulo contribuisce all'effetto antipertensivo ma causa effetti collaterali come la <span class="font-bold">tosse secca</span>.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-blue-50 p-6 rounded-lg border border-blue-200">
+                                <h3 class="text-xl font-semibold text-blue-800 mb-4">Sartani (ARB)</h3>
+                                <div class="ras-pathway">
+                                    <div class="ras-step">Angiotensina I</div>
+                                </div>
+                                <div class="ras-pathway">
+                                    <div class="ras-step">Angiotensina II</div>
+                                </div>
+                                <div class="intervention-point sartan">
+                                    <p class="font-semibold">Blocco Recettoriale</p>
+                                    <p class="text-sm text-slate-600">Bloccano selettivamente i recettori AT1, impedendo all'Angiotensina II di esercitare i suoi effetti vasocostrittori.</p>
+                                </div>
+                                <div class="text-center font-bold text-xl text-blue-600">Nessun Effetto dell'Angiotensina II</div>
+                                 <div class="mt-6">
+                                    <h4 class="font-semibold text-blue-700">Nessun Effetto sulla Bradichinina</h4>
+                                    <p class="text-sm text-slate-600">Non interferiscono con il metabolismo della bradichinina, motivo per cui hanno un'incidenza molto più bassa di tosse e angioedema.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="pharma" class="tab-pane">
+                    <div class="p-2">
+                        <h2 class="text-2xl font-bold text-slate-800 mb-2">Confronto Farmacocinetico</h2>
+                        <p class="text-slate-600 mb-6">La farmacocinetica descrive come un farmaco viene assorbito, distribuito, metabolizzato ed eliminato. Le differenze in questi parametri tra i vari farmaci, anche all'interno della stessa classe, sono fondamentali per personalizzare la terapia in base al profilo del paziente (es. funzionalità renale o epatica). Questa sezione permette di esplorare e confrontare visivamente questi dati.</p>
+                        
+                        <div class="text-center mb-8">
+                            <span class="isolate inline-flex rounded-md shadow-sm">
+                                <button type="button" id="btn-ace" class="pharma-btn relative inline-flex items-center rounded-l-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-10">ACE-Inibitori</button>
+                                <button type="button" id="btn-sartan" class="pharma-btn relative -ml-px inline-flex items-center rounded-r-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10">Sartani</button>
+                            </span>
+                        </div>
+
+                        <div id="pharma-content">
+                            <div class="grid lg:grid-cols-2 gap-8 items-start">
+                                <div id="pharmacokinetics-table-container" class="overflow-x-auto"></div>
+                                <div>
+                                    <div class="chart-container mb-8">
+                                        <canvas id="halfLifeChart"></canvas>
+                                    </div>
+                                    <div class="chart-container">
+                                        <canvas id="eliminationChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="indications" class="tab-pane">
+                    <div class="p-2">
+                        <h2 class="text-2xl font-bold text-slate-800 mb-2">Indicazioni Cliniche & Efficacia Comparativa</h2>
+                        <p class="text-slate-600 mb-8">Entrambe le classi di farmaci sono pilastri nel trattamento di patologie cardiovascolari e renali. Tuttavia, esistono differenze nell'efficacia su esiti specifici e indicazioni approvate per singoli farmaci. Questa sezione riassume le principali applicazioni e le sfumature nell'efficacia clinica, guidando una scelta terapeutica più informata.</p>
+
+                        <div class="mb-10">
+                            <h3 class="text-xl font-semibold text-slate-700 mb-4">Indicazioni Comuni a Entrambe le Classi</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-center">
+                                <div class="bg-teal-50 p-4 rounded-lg border border-teal-200"><p>Ipertensione</p></div>
+                                <div class="bg-teal-50 p-4 rounded-lg border border-teal-200"><p>Insufficienza Cardiaca</p></div>
+                                <div class="bg-teal-50 p-4 rounded-lg border border-teal-200"><p>Post-Infarto Miocardico</p></div>
+                                <div class="bg-teal-50 p-4 rounded-lg border border-teal-200"><p>Malattia Renale Cronica</p></div>
+                                <div class="bg-teal-50 p-4 rounded-lg border border-teal-200"><p>Nefropatia Diabetica</p></div>
+                                <div class="bg-teal-50 p-4 rounded-lg border border-teal-200"><p>Malattie Glomerulari</p></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-10">
+                            <h3 class="text-xl font-semibold text-slate-700 mb-4">Indicazioni Specifiche Approvate (Sartani Selezionati)</h3>
+                             <div class="space-y-4">
+                                <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded">
+                                    <p><strong class="text-indigo-800">Losartan:</strong> Riduzione rischio ictus (in ipertesi con ipertrofia ventricolare sinistra), nefropatia diabetica.</p>
+                                </div>
+                                <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded">
+                                    <p><strong class="text-indigo-800">Valsartan:</strong> Post-infarto miocardico, insufficienza cardiaca.</p>
+                                </div>
+                                <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded">
+                                    <p><strong class="text-indigo-800">Irbesartan:</strong> Nefropatia diabetica.</p>
+                                </div>
+                                 <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded">
+                                    <p><strong class="text-indigo-800">Telmisartan:</strong> Riduzione rischio cardiovascolare (in alternativa agli ACE-i).</p>
+                                </div>
+                            </div>
+                        </div>
+
+                         <div>
+                            <h3 class="text-xl font-semibold text-slate-700 mb-4">Note sull'Efficacia</h3>
+                            <ul class="space-y-3 list-disc list-inside text-slate-600">
+                                <li><strong>Pressione Arteriosa:</strong> Efficacia generalmente considerata <span class="font-semibold">equivalente</span> tra le due classi.</li>
+                                <li><strong>Mortalità e Insufficienza Renale:</strong> Alcuni studi suggeriscono un leggero <span class="font-semibold text-red-700">vantaggio per gli ACE-inibitori</span> nel ridurre la mortalità totale e la progressione verso l'insufficienza renale, specialmente in pazienti con malattia renale cronica.</li>
+                                <li><strong>Insufficienza Cardiaca:</strong> Gli <span class="font-semibold text-red-700">ACE-inibitori</span> rimangono la terapia di prima linea per l'HFrEF grazie a una documentazione più solida. I sartani sono un'alternativa eccellente per i pazienti intolleranti.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="safety" class="tab-pane">
+                     <div class="p-2">
+                        <h2 class="text-2xl font-bold text-slate-800 mb-2">Profilo di Sicurezza e Tollerabilità</h2>
+                        <p class="text-slate-600 mb-8">La scelta tra queste due classi di farmaci è spesso guidata dal loro profilo di effetti avversi. Mentre condividono alcuni rischi, come l'iperkaliemia, la differenza più marcata risiede nell'incidenza di tosse e angioedema. Questa sezione mette a confronto diretto i loro profili di sicurezza per evidenziare le considerazioni cliniche più importanti.</p>
+
+                        <div class="bg-amber-50 border-l-4 border-amber-500 text-amber-800 p-4 rounded-r-lg mb-8">
+                            <h4 class="font-bold">La Differenza Chiave: Tosse e Angioedema</h4>
+                            <p>La maggiore incidenza di <strong>tosse secca persistente</strong> (10-25%) e il rischio più elevato (sebbene raro) di <strong>angioedema</strong> con gli ACE-inibitori sono dovuti all'accumulo di bradichinina. I sartani, non influenzando la bradichinina, sono molto meglio tollerati da questo punto di vista e rappresentano l'alternativa di scelta in caso di questi effetti collaterali.</p>
+                        </div>
+                        
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div>
+                                <h3 class="text-xl font-semibold text-slate-700 mb-4">Effetti Comuni a Entrambe le Classi</h3>
+                                <ul class="space-y-2">
+                                    <li class="flex items-start"><span class="mr-2 text-yellow-500">⚠️</span><span>Ipotensione e capogiri</span></li>
+                                    <li class="flex items-start"><span class="mr-2 text-yellow-500">⚠️</span><span>Iperkaliemia (aumento del potassio)</span></li>
+                                    <li class="flex items-start"><span class="mr-2 text-yellow-500">⚠️</span><span>Alterazione transitoria della funzione renale</span></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-semibold text-slate-700 mb-4">Controindicazioni Principali (Comuni)</h3>
+                                <ul class="space-y-2">
+                                    <li class="flex items-start"><span class="mr-2 text-red-500">🚫</span><span>Gravidanza</span></li>
+                                    <li class="flex items-start"><span class="mr-2 text-red-500">🚫</span><span>Storia di angioedema</span></li>
+                                    <li class="flex items-start"><span class="mr-2 text-red-500">🚫</span><span>Stenosi bilaterale dell'arteria renale</span></li>
+                                    <li class="flex items-start"><span class="mr-2 text-red-500">🚫</span><span>Associazione di un ACE-inibitore con un sartano</span></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="mt-10">
+                            <h3 class="text-xl font-semibold text-slate-700 mb-4">Interazioni Farmacologiche Rilevanti</h3>
+                             <ul class="space-y-3 list-disc list-inside text-slate-600">
+                                <li><strong>FANS (es. ibuprofene):</strong> Possono ridurre l'effetto antipertensivo e aumentare il rischio di danno renale (interazione più marcata con ACE-i).</li>
+                                <li><strong>Diuretici risparmiatori di potassio / Integratori di potassio:</strong> Aumentano il rischio di iperkaliemia grave.</li>
+                                <li><strong>Litio:</strong> Entrambe le classi possono aumentarne la tossicità.</li>
+                             </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const aceInhibitorsData = [
+        { name: 'Captopril', bioavailability: 75, prodrug: 'No', elimination: 'Epatica (60%), Renale (40%)', halfLife: 2, renal: 40, hepatic: 60, other: 0 },
+        { name: 'Enalapril', bioavailability: 60, prodrug: 'Sì', elimination: 'Epatica (60%), Renale (40%)', halfLife: 11, renal: 40, hepatic: 60, other: 0 },
+        { name: 'Lisinopril', bioavailability: 25, prodrug: 'No', elimination: 'Renale (100%)', halfLife: 13, renal: 100, hepatic: 0, other: 0 },
+        { name: 'Perindopril', bioavailability: 66, prodrug: 'Sì', elimination: 'Epatica (88%), Renale (12%)', halfLife: 10, renal: 12, hepatic: 88, other: 0 },
+        { name: 'Ramipril', bioavailability: 28, prodrug: 'Sì', elimination: 'Epatica (98%), Renale (2%)', halfLife: 17, renal: 2, hepatic: 98, other: 0 },
+        { name: 'Quinapril', bioavailability: 37, prodrug: 'Sì', elimination: 'Epatica (>99%), Renale (<1%)', halfLife: 2, renal: 1, hepatic: 99, other: 0 },
+        { name: 'Fosinopril', bioavailability: 32, prodrug: 'Sì', elimination: 'Duplice (50% Epatica, 50% Renale)', halfLife: 11, renal: 50, hepatic: 50, other: 0 },
+    ];
+
+    const sartansData = [
+        { name: 'Losartan', bioavailability: 33, prodrug: 'Sì', elimination: '35% R; 60% B', halfLife: 2, renal: 35, hepatic: 0, other: 60 },
+        { name: 'Candesartan', bioavailability: 42, prodrug: 'Sì', elimination: '33% R; 67% B', halfLife: 9, renal: 33, hepatic: 0, other: 67 },
+        { name: 'Eprosartan', bioavailability: 63, prodrug: 'No', elimination: '7% R; 90% B', halfLife: 7, renal: 7, hepatic: 0, other: 90 },
+        { name: 'Irbesartan', bioavailability: 70, prodrug: 'No', elimination: '20% R; 80% B', halfLife: 13, renal: 20, hepatic: 0, other: 80 },
+        { name: 'Telmisartan', bioavailability: 43, prodrug: 'No', elimination: '<1% R; >97% B', halfLife: 24, renal: 1, hepatic: 0, other: 97 },
+        { name: 'Valsartan', bioavailability: 23, prodrug: 'No', elimination: '13% R; 83% B', halfLife: 6, renal: 13, hepatic: 0, other: 83 },
+        { name: 'Olmesartan', bioavailability: 26, prodrug: 'Sì', elimination: '35-50% R; 50-65% B', halfLife: 13, renal: 42, hepatic: 0, other: 58 },
+        { name: 'Azilsartan', bioavailability: 60, prodrug: 'Sì', elimination: '42% urine; 55% B', halfLife: 12, renal: 42, hepatic: 0, other: 55 },
+    ];
+    
+    const tabs = document.querySelectorAll('.tab-btn');
+    const panes = document.querySelectorAll('.tab-pane');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            panes.forEach(p => p.classList.remove('active'));
+            
+            tab.classList.add('active');
+            document.getElementById(tab.dataset.tab).classList.add('active');
+        });
+    });
+
+    const pharmaBtns = document.querySelectorAll('.pharma-btn');
+    let halfLifeChart, eliminationChart;
+    let currentDrugClass = 'ace'; 
+
+    function createPharmacokineticsTable(data, drugClass) {
+        const container = document.getElementById('pharmacokinetics-table-container');
+        const headers = drugClass === 'ace' ?
+            ['Agente', 'Biodisp. (%)', 'Profarmaco', 'Via di Eliminazione', 'Emivita (ore)'] :
+            ['Agente', 'Biodisp. (%)', 'Profarmaco', 'Via di Eliminazione', 'Emivita (ore)'];
+        
+        let tableHTML = `<table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr>`;
+        headers.forEach(h => tableHTML += `<th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">${h}</th>`);
+        tableHTML += `</tr></thead><tbody class="bg-white divide-y divide-gray-200">`;
+
+        data.forEach(drug => {
+            tableHTML += `<tr class="hover:bg-gray-50">
+                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${drug.name}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${drug.bioavailability}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${drug.prodrug}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${drug.elimination}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${drug.halfLife}</td>
+            </tr>`;
+        });
+        tableHTML += `</tbody></table>`;
+        container.innerHTML = tableHTML;
+    }
+
+    function createOrUpdateCharts(data, drugClass) {
+        const halfLifeCtx = document.getElementById('halfLifeChart').getContext('2d');
+        const eliminationCtx = document.getElementById('eliminationChart').getContext('2d');
+
+        if (halfLifeChart) halfLifeChart.destroy();
+        if (eliminationChart) eliminationChart.destroy();
+
+        const labels = data.map(d => d.name);
+        const halfLifeData = data.map(d => d.halfLife);
+        
+        halfLifeChart = new Chart(halfLifeCtx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Emivita (ore)',
+                    data: halfLifeData,
+                    backgroundColor: drugClass === 'ace' ? 'rgba(239, 68, 68, 0.6)' : 'rgba(59, 130, 246, 0.6)',
+                    borderColor: drugClass === 'ace' ? 'rgba(239, 68, 68, 1)' : 'rgba(59, 130, 246, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Emivita Plasmatica (ore)', font: {size: 16} },
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        const totalRenal = data.reduce((sum, d) => sum + d.renal, 0);
+        const totalHepatic = data.reduce((sum, d) => sum + d.hepatic, 0);
+        const totalOther = data.reduce((sum, d) => sum + d.other, 0);
+
+        let eliminationLabels, eliminationValues, eliminationColors;
+        let titleText = 'Vie di Eliminazione Principali';
+
+        if (drugClass === 'ace') {
+            eliminationLabels = ['Renale', 'Epatica'];
+            eliminationValues = [totalRenal, totalHepatic];
+            eliminationColors = ['rgba(59, 130, 246, 0.7)', 'rgba(234, 179, 8, 0.7)'];
+            titleText = 'Via di Eliminazione Predominante (ACE-i)';
+        } else {
+            eliminationLabels = ['Renale', 'Biliare/Fecale'];
+            eliminationValues = [totalRenal, totalOther];
+            eliminationColors = ['rgba(59, 130, 246, 0.7)', 'rgba(22, 163, 74, 0.7)'];
+            titleText = 'Via di Eliminazione Predominante (Sartani)';
+        }
+
+        eliminationChart = new Chart(eliminationCtx, {
+            type: 'doughnut',
+            data: {
+                labels: eliminationLabels,
+                datasets: [{
+                    data: eliminationValues,
+                    backgroundColor: eliminationColors,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: titleText, font: { size: 16 }},
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                const value = context.raw;
+                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0%';
+                                label += percentage;
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function updatePharmaView(drugClass) {
+        const data = drugClass === 'ace' ? aceInhibitorsData : sartansData;
+        createPharmacokineticsTable(data, drugClass);
+        createOrUpdateCharts(data, drugClass);
+
+        pharmaBtns.forEach(b => {
+            if (b.id === `btn-${drugClass}`) {
+                b.classList.remove('bg-white', 'text-gray-900', 'ring-1', 'ring-inset', 'ring-gray-300', 'hover:bg-gray-50');
+                b.classList.add('bg-blue-600', 'text-white');
+            } else {
+                 b.classList.add('bg-white', 'text-gray-900', 'ring-1', 'ring-inset', 'ring-gray-300', 'hover:bg-gray-50');
+                b.classList.remove('bg-blue-600', 'text-white');
+            }
+        });
+    }
+    
+    pharmaBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentDrugClass = btn.id.split('-')[1];
+            updatePharmaView(currentDrugClass);
+        });
+    });
+
+    updatePharmaView('ace');
+});
+</script>
+
+</body>
+</html>
