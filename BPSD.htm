@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="it" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guida Interattiva alla Gestione dei BPSD nella Demenza</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutral with Teal and Coral Accents -->
+    <!-- Application Structure Plan: L'app è una SPA a scorrimento verticale con una barra di navigazione fissa. La struttura non segue l'ordine del report, ma un flusso logico-clinico: 1. Introduzione (Contesto); 2. Percorso Decisionale (Diagramma del flusso di cura); 3. Interventi Non Farmacologici (Prima linea, interattivi); 4. Terapie Farmacologiche (Confronto visivo rischi/benefici); 5. Prescrizione e Sospensione (Visualizzazione dei principi chiave); 6. Conclusioni. Questa architettura è stata scelta per guidare l'utente, specialmente un clinico o un caregiver, attraverso il processo di pensiero raccomandato, enfatizzando l'approccio "prima il non farmacologico". Facilita la comprensione e la navigazione, permettendo un accesso rapido alle sezioni di interesse. -->
+    <!-- Visualization & Content Choices: 1. Prevalenza BPSD (Info): Statistica chiave (97%) per introdurre il problema. 2. Percorso Decisionale (Organize): Diagramma di flusso HTML/CSS per mostrare la logica clinica. Semplifica un processo complesso. 3. Terapie Non-Farmacologiche (Inform/Organize): Card interattive per rendere l'esplorazione meno monotona di una lista. 4. Confronto Farmaci (Compare): Grafico a barre orizzontali (Chart.js) per confrontare efficacia e rischio di alternative farmacologiche, più chiaro di una tabella. 5. Visualizzazione Tapering (Change/Inform): Grafico a linee (Chart.js) che mostra l'impatto di diversi regimi di sospensione. Questo è un elemento "wow" che rende un concetto farmacologico complesso (tapering iperbolico) immediatamente comprensibile. 6. Checklist Monitoraggio (Inform): Checklist HTML interattiva per un'esperienza più coinvolgente. Tutte le scelte mirano a tradurre il testo in elementi visivi e interattivi per migliorare la comprensione e la ritenzione delle informazioni, evitando sovraccarico cognitivo. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF7;
+            color: #333;
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link.active, .nav-link:hover {
+            color: #E67E22;
+            border-bottom-color: #E67E22;
+        }
+        .section-title {
+            color: #005A5B;
+        }
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 300px;
+                max-height: 60vh;
+            }
+        }
+        .flow-step {
+            border: 2px solid #D1D5DB;
+            background-color: #fff;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            flex-grow: 1;
+        }
+        .flow-arrow {
+            font-size: 2rem;
+            color: #9CA3AF;
+            align-self: center;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <header class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-3">
+            <div class="flex items-center justify-between">
+                <h1 class="text-xl md:text-2xl font-bold text-[#005A5B]">Gestione BPSD</h1>
+                <div class="hidden md:flex space-x-6 text-sm">
+                    <a href="#introduction" class="nav-link font-semibold">Introduzione</a>
+                    <a href="#pathway" class="nav-link font-semibold">Percorso</a>
+                    <a href="#non-pharma" class="nav-link font-semibold">Approcci Non Farmacologici</a>
+                    <a href="#pharma" class="nav-link font-semibold">Terapie Farmacologiche</a>
+                    <a href="#prescription" class="nav-link font-semibold">Prescrizione e Sospensione</a>
+                    <a href="#principles" class="nav-link font-semibold">Principi Chiave</a>
+                </div>
+                <div class="md:hidden">
+                    <select id="mobile-nav" class="bg-white border border-gray-300 rounded-md px-2 py-1 text-sm">
+                        <option value="#introduction">Introduzione</option>
+                        <option value="#pathway">Percorso</option>
+                        <option value="#non-pharma">Non Farmacologici</option>
+                        <option value="#pharma">Farmacologici</option>
+                        <option value="#prescription">Prescrizione</option>
+                        <option value="#principles">Principi Chiave</option>
+                    </select>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8">
+
+        <!-- Section 1: Introduction -->
+        <section id="introduction" class="text-center min-h-[60vh] flex flex-col justify-center items-center">
+            <h2 class="text-3xl md:text-5xl font-bold section-title mb-4">Gestire i Disturbi Comportamentali nella Demenza</h2>
+            <p class="max-w-3xl mx-auto text-lg md:text-xl text-gray-600 mb-8">Un approccio interattivo per comprendere e affrontare i Sintomi Comportamentali e Psicologici della Demenza (BPSD).</p>
+            <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+                <p class="text-5xl md:text-7xl font-bold text-[#E67E22]">97%</p>
+                <p class="text-lg text-gray-700 mt-2">Dei pazienti con demenza manifesta almeno un sintomo BPSD entro 5 anni dalla diagnosi.</p>
+                <p class="text-sm text-gray-500 mt-4">Questo non è un evento secondario, ma una componente centrale della malattia che richiede un approccio proattivo e centrato sulla persona.</p>
+            </div>
+        </section>
+
+        <!-- Section 2: Decision Pathway -->
+        <section id="pathway" class="my-16 py-12 bg-white rounded-xl shadow-md border border-gray-200">
+            <div class="text-center mb-12 px-4">
+                <h2 class="text-3xl font-bold section-title mb-3">Il Percorso Decisionale Clinico</h2>
+                <p class="max-w-2xl mx-auto text-gray-600">La gestione dei BPSD segue un percorso logico che mette al primo posto la sicurezza e il benessere del paziente. Il primo passo non è mai il farmaco.</p>
+            </div>
+            <div class="px-4">
+                <div class="flex flex-col md:flex-row items-stretch justify-center gap-4 text-sm md:text-base">
+                    <div class="flow-step">
+                        <span class="text-2xl">①</span>
+                        <h3 class="font-bold mt-2">Valutazione</h3>
+                        <p class="mt-1">Identificare e descrivere il comportamento. È pericoloso?</p>
+                    </div>
+                    <div class="flow-arrow transform md:rotate-0 rotate-90">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="text-2xl">②</span>
+                        <h3 class="font-bold mt-2">Ricerca Cause</h3>
+                        <p class="mt-1">Escludere cause fisiche (dolore, infezioni), ambientali o psicologiche.</p>
+                    </div>
+                    <div class="flow-arrow transform md:rotate-0 rotate-90">&rarr;</div>
+                    <div class="flow-step bg-teal-50 border-teal-500">
+                        <span class="text-2xl">③</span>
+                        <h3 class="font-bold mt-2 text-teal-800">Intervento Non Farmacologico</h3>
+                        <p class="mt-1 text-teal-700">Implementare strategie personalizzate (vedi sezione successiva). È la prima linea di trattamento.</p>
+                    </div>
+                    <div class="flow-arrow transform md:rotate-0 rotate-90">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="text-2xl">④</span>
+                        <h3 class="font-bold mt-2">Rivalutazione</h3>
+                        <p class="mt-1">L'intervento ha funzionato? Se sì, continuare. Se no, e c'è rischio/disagio grave, considerare il passo successivo.</p>
+                    </div>
+                     <div class="flow-arrow transform md:rotate-0 rotate-90">&rarr;</div>
+                     <div class="flow-step bg-orange-50 border-orange-500">
+                        <span class="text-2xl">⑤</span>
+                        <h3 class="font-bold mt-2 text-orange-800">Considerare Farmaco</h3>
+                        <p class="mt-1 text-orange-700">Solo se BPSD gravi, refrattari e pericolosi. Valutare attentamente rapporto rischio/beneficio.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Non-Pharma -->
+        <section id="non-pharma" class="my-16 py-12">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold section-title mb-3">Approcci Non Farmacologici: La Prima Scelta</h2>
+                <p class="max-w-2xl mx-auto text-gray-600">Questi interventi sono più sicuri ed efficaci nel lungo periodo. Clicca su ogni card per saperne di più.</p>
+            </div>
+            <div id="non-pharma-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            </div>
+        </section>
+
+        <!-- Section 4: Pharma -->
+        <section id="pharma" class="my-16 py-12 bg-white rounded-xl shadow-md border border-gray-200">
+             <div class="text-center mb-12 px-4">
+                <h2 class="text-3xl font-bold section-title mb-3">Terapie Farmacologiche: Un'attenta Valutazione</h2>
+                <p class="max-w-2xl mx-auto text-gray-600">Quando gli interventi non farmacologici non bastano e i sintomi sono gravi, si possono considerare i farmaci, sempre con cautela.</p>
+            </div>
+
+            <div class="flex justify-center mb-8 border-b">
+                <button data-tab="antipsychotics" class="tab-button px-6 py-2 font-semibold text-lg border-b-2 border-teal-500 text-teal-600">Antipsicotici</button>
+                <button data-tab="alternatives" class="tab-button px-6 py-2 font-semibold text-lg border-b-2 border-transparent text-gray-500">Alternative</button>
+            </div>
+
+            <div id="antipsychotics-content" class="tab-content px-4">
+                <p class="text-center max-w-2xl mx-auto mb-8">Gli antipsicotici sono farmaci da usare come <strong class="text-red-600">ultima risorsa</strong>, per brevi periodi e solo per sintomi psicotici e aggressività gravi. I rischi, inclusi <strong class="text-red-600">aumento della mortalità e ictus</strong>, sono significativi.</p>
+                <div id="antipsychotics-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                </div>
+            </div>
+
+            <div id="alternatives-content" class="tab-content hidden px-4">
+                 <p class="text-center max-w-2xl mx-auto mb-8">Esistono alternative agli antipsicotici con profili di rischio/beneficio potenzialmente più favorevoli a seconda del sintomo target.</p>
+                <div class="chart-container">
+                    <canvas id="alternativesChart"></canvas>
+                </div>
+                 <p class="text-center text-sm text-gray-500 mt-4">Il grafico confronta l'efficacia (valutazione qualitativa basata sul report) per 'Agitazione/Aggressività' vs 'Altri BPSD' (depressione, ansia, psicosi) per diverse classi di farmaci alternativi.</p>
+            </div>
+        </section>
+
+        <!-- Section 5: Prescription and Deprescription -->
+        <section id="prescription" class="my-16 py-12">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold section-title mb-3">Prescrizione e Sospensione Cauta</h2>
+                <p class="max-w-2xl mx-auto text-gray-600">La gestione degli antipsicotici richiede un approccio metodico sia all'inizio che, soprattutto, alla fine della terapia.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+                    <h3 class="font-bold text-xl text-center mb-4 text-[#005A5B]">Principi di Prescrizione e Monitoraggio</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <span class="text-teal-500 font-bold mr-3 text-xl">&#10003;</span>
+                            <div><strong>Start Low, Go Slow:</strong> Iniziare con la dose minima efficace e aumentarla molto lentamente.</div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-teal-500 font-bold mr-3 text-xl">&#10003;</span>
+                            <div><strong>Durata Breve:</strong> La terapia dovrebbe essere a breve termine (idealmente < 12 settimane).</div>
+                        </li>
+                        <li class="flex items-start">
+                             <span class="text-teal-500 font-bold mr-3 text-xl">&#10003;</span>
+                            <div><strong>Consenso Informato:</strong> Discutere sempre i rischi e i benefici con pazienti e familiari. La maggior parte degli usi è "off-label".</div>
+                        </li>
+                         <li class="flex items-start">
+                             <span class="text-teal-500 font-bold mr-3 text-xl">&#10003;</span>
+                            <div><strong>No Politerapia:</strong> Evitare l'uso di più antipsicotici o l'associazione con benzodiazepine.</div>
+                        </li>
+                        <li class="flex items-start">
+                             <span class="text-teal-500 font-bold mr-3 text-xl">&#10003;</span>
+                            <div><strong>Monitoraggio Costante:</strong> Controllare regolarmente (ogni 2-6 settimane) efficacia ed effetti collaterali (ECG, peso, parametri metabolici, EPS).</div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+                     <h3 class="font-bold text-xl text-center mb-4 text-[#E67E22]">L'Importanza della Sospensione Graduale (Tapering)</h3>
+                     <p class="text-sm text-center mb-4 text-gray-600">Una sospensione brusca può causare ricadute. Un tapering lento e iperbolico (riduzioni percentuali sulla dose corrente) è più sicuro.</p>
+                     <div class="chart-container" style="height: 300px; max-height: 40vh;">
+                         <canvas id="taperingChart"></canvas>
+                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 6: Key Principles -->
+        <section id="principles" class="my-16 py-12 text-center bg-teal-50 rounded-xl">
+             <div class="text-center mb-8 px-4">
+                <h2 class="text-3xl font-bold section-title mb-3">Principi Guida per una Cura Ottimale</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 px-6">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="font-bold text-lg mb-2 text-teal-800">Approccio Centrato sulla Persona</h3>
+                    <p class="text-sm text-gray-600">Ogni intervento, farmacologico e non, deve essere "cucito su misura" per il paziente, considerando i suoi bisogni, la sua storia e le sue preferenze.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="font-bold text-lg mb-2 text-teal-800">Team Multidisciplinare</h3>
+                    <p class="text-sm text-gray-600">La gestione efficace richiede la collaborazione di geriatri, neurologi, psichiatri, psicologi, infermieri e, soprattutto, dei caregiver.</p>
+                </div>
+                 <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="font-bold text-lg mb-2 text-teal-800">De-prescrizione Proattiva</h3>
+                    <p class="text-sm text-gray-600">L'obiettivo non è solo prescrivere, ma rivalutare costantemente e tentare la sospensione dei farmaci appena clinicamente possibile per minimizzare i rischi.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer class="text-center py-6 bg-gray-100 text-sm text-gray-500">
+        <p>Questa è un'applicazione dimostrativa basata su un report clinico. Le informazioni non sostituiscono il parere medico. Consultare sempre un professionista sanitario qualificato.</p>
+    </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const data = {
+        nonPharma: [
+            { title: "Formazione Caregiver", description: "Programmi psico-educazionali per supportare e formare i familiari. Molto efficaci nel ridurre il distress e migliorare la gestione.", icon: "🧑‍🏫" },
+            { title: "Terapie Comportamentali", description: "Attività personalizzate basate su abilità e interessi del paziente. Efficaci per agitazione e depressione.", icon: "🎨" },
+            { title: "Musicoterapia", description: "Uso della musica per stimolare e calmare. Forte evidenza nella riduzione dell'agitazione.", icon: "🎵" },
+            { title: "Pet Therapy", description: "Interazione con animali per migliorare il benessere emotivo e sociale. Benefici su apatia e depressione.", icon: "🐾" },
+            { title: "Terapia Occupazionale", description: "Coinvolgimento in attività pratiche e routinarie per mantenere le funzioni cognitive e ridurre l'agitazione.", icon: "🧩" },
+            { title: "Stimolazione Sensoriale", description: "Uso di stimoli (luci, suoni, odori) in ambienti controllati (es. Snoezelen) per ridurre l'agitazione.", icon: "✨" },
+            { title: "Esercizio Fisico", description: "Attività fisica regolare per mantenere lo stato funzionale e ridurre agitazione e aggressività.", icon: "🏃" },
+            { title: "Interventi Ambientali", description: "Creare un ambiente sicuro, tranquillo e prevedibile, adattato alle capacità del paziente.", icon: "🏡" },
+            { title: "Terapia della Validazione", description: "Approccio empatico che valida i sentimenti e la realtà percepita del paziente, riducendo l'ansia.", icon: "💬" },
+        ],
+        antipsychotics: [
+             { name: "Risperidone", notes: "Unico approvato in EU per aggressività grave a breve termine (max 6-12 settimane). Rischio cerebrovascolare e mortalità." },
+             { name: "Olanzapina", notes: "Efficace su psicosi e aggressività, ma con significativi effetti metabolici. Uso off-label." },
+             { name: "Quetiapina", notes: "Meglio tollerata, specialmente in presenza di parkinsonismo (es. Demenza a Corpi di Lewy). Efficacia sull'agitazione dibattuta." },
+             { name: "Aripiprazolo", notes: "Efficace su psicosi e aggressività, ma può causare acatisia (irrequietezza motoria). Uso off-label." },
+             { name: "Aloperidolo", notes: "Antipsicotico tipico di seconda scelta. Alto rischio di effetti extrapiramidali (EPS). Da usare solo per brevi periodi in acuto." },
+             { name: "Brexpiprazolo", notes: "Unico farmaco approvato da FDA specificamente per l'agitazione nella malattia di Alzheimer." },
+        ]
+    };
+
+    const nonPharmaContainer = document.getElementById('non-pharma-cards');
+    data.nonPharma.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card bg-white p-6 rounded-lg shadow-md border border-gray-200 cursor-pointer';
+        card.innerHTML = `
+            <div class="flex items-center text-2xl mb-4">
+                <span class="mr-4">${item.icon}</span>
+                <h3 class="font-bold text-lg text-gray-800">${item.title}</h3>
+            </div>
+            <p class="text-sm text-gray-600">${item.description}</p>
+        `;
+        card.addEventListener('click', () => {
+             alert(`Approfondimento: ${item.title}\n\n${item.description}`);
+        });
+        nonPharmaContainer.appendChild(card);
+    });
+
+    const antipsychoticsContainer = document.getElementById('antipsychotics-cards');
+    data.antipsychotics.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card bg-white p-5 rounded-lg shadow-sm border border-gray-200';
+        card.innerHTML = `
+            <h3 class="font-bold text-md text-gray-800">${item.name}</h3>
+            <p class="text-xs text-gray-600 mt-2">${item.notes}</p>
+        `;
+        antipsychoticsContainer.appendChild(card);
+    });
+
+    const tabs = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => {
+                t.classList.remove('border-teal-500', 'text-teal-600');
+                t.classList.add('border-transparent', 'text-gray-500');
+            });
+            tab.classList.add('border-teal-500', 'text-teal-600');
+            tab.classList.remove('border-transparent', 'text-gray-500');
+
+            tabContents.forEach(content => {
+                if (content.id === `${tab.dataset.tab}-content`) {
+                    content.classList.remove('hidden');
+                } else {
+                    content.classList.add('hidden');
+                }
+            });
+        });
+    });
+
+    const alternativesCtx = document.getElementById('alternativesChart').getContext('2d');
+    const alternativesChart = new Chart(alternativesCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Antidepressivi (SSRI)', 'Memantina', 'AChEI', 'Carbamazepina', 'Benzodiazepine'],
+            datasets: [
+                {
+                    label: 'Efficacia Agitazione/Aggressività',
+                    data: [3, 3, 1, 2, 1],
+                    backgroundColor: 'rgba(0, 90, 91, 0.7)',
+                    borderColor: 'rgba(0, 90, 91, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Efficacia Altri BPSD (umore, ansia)',
+                    data: [4, 2, 2, 1, 3],
+                    backgroundColor: 'rgba(230, 126, 34, 0.7)',
+                    borderColor: 'rgba(230, 126, 34, 1)',
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    max: 5,
+                    title: { display: true, text: 'Livello di Efficacia (qualitativo)' }
+                },
+                y: {
+                    ticks: {
+                        autoSkip: false,
+                         callback: function(value, index, values) {
+                            const label = this.getLabelForValue(value);
+                            if (label.length > 20) {
+                                return label.substring(0, 20) + '...';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Confronto Efficacia Alternative Farmacologiche'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            const value = context.parsed.x;
+                            const desc = ['Nessuna/Scarsa', 'Leggera', 'Moderata', 'Buona', 'Forte'];
+                            label += desc[value-1] || 'N/A';
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    const taperingCtx = document.getElementById('taperingChart').getContext('2d');
+    const taperingChart = new Chart(taperingCtx, {
+        type: 'line',
+        data: {
+            labels: Array.from({length: 12}, (_, i) => `Settimana ${i+1}`),
+            datasets: [
+                {
+                    label: 'Sospensione Brusca',
+                    data: [100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    borderColor: 'rgb(220, 38, 38)',
+                    backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                    tension: 0.1,
+                    pointStyle: 'crossRot',
+                    pointRadius: 6,
+                },
+                {
+                    label: 'Tapering Lineare (25% ogni 2 sett.)',
+                    data: [100, 100, 75, 75, 50, 50, 25, 25, 0, 0, 0, 0],
+                    borderColor: 'rgb(230, 126, 34)',
+                     backgroundColor: 'rgba(230, 126, 34, 0.1)',
+                    tension: 0.1,
+                },
+                {
+                    label: 'Tapering Iperbolico (lento)',
+                    data: [100, 90, 81, 73, 66, 59, 53, 48, 43, 39, 35, 31],
+                    borderColor: 'rgb(0, 90, 91)',
+                    backgroundColor: 'rgba(0, 90, 91, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 110,
+                    title: { display: true, text: '% Dose Iniziale' }
+                }
+            },
+            plugins: {
+                title: { display: true, text: 'Schemi di Sospensione Antipsicotici' },
+                tooltip: { mode: 'index', intersect: false },
+                annotation: {
+                    annotations: {
+                        line1: {
+                            type: 'line',
+                            yMin: 20,
+                            yMax: 20,
+                            borderColor: 'rgb(255, 99, 132)',
+                            borderWidth: 2,
+                            label: {
+                                content: 'Alto Rischio Ricaduta',
+                                enabled: true,
+                                position: 'end'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    const mobileNav = document.getElementById('mobile-nav');
+    mobileNav.addEventListener('change', (e) => {
+        window.location.hash = e.target.value;
+    });
+
+    const navLinks = document.querySelectorAll('.nav-link');
+    const sections = document.querySelectorAll('main section');
+    window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            if (pageYOffset >= sectionTop - 100) {
+                current = section.getAttribute('id');
+            }
+        });
+
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === `#${current}`) {
+                link.classList.add('active');
+            }
+        });
+    });
+});
+</script>
+
+</body>
+</html>
