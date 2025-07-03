@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tremore Essenziale: Una Guida Interattiva</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony (Warm neutrals with muted teal/blue accent) -->
+    <!-- Application Structure Plan: Ho progettato l'applicazione con una struttura tematica non lineare, guidata da una navigazione a schede. Le sezioni sono: 'Panoramica', 'Comprendere il TE', 'Diagnosi e Confronti', e 'Opzioni di Trattamento'. Questa architettura è stata scelta perché trasforma un documento denso in un'esperienza di apprendimento interattiva. Invece di scorrere un lungo testo, l'utente può navigare direttamente verso l'area di interesse (es. 'Come si diagnostica?' o 'Quali sono le cure?'). Le interazioni chiave includono grafici dinamici per i dati epidemiologici, un confronto interattivo tra Tremore Essenziale e Parkinson, e filtri per le opzioni terapeutiche. Questo approccio basato sui compiti ('task-oriented') migliora l'usabilità e facilita la comprensione dei concetti chiave. -->
+    <!-- Visualization & Content Choices: Ho selezionato metodi di visualizzazione per massimizzare la chiarezza e l'interazione senza usare SVG. Per l'epidemiologia (Goal: Inform), un grafico a barre di Chart.js mostra l'aumento della prevalenza con l'età. Per la diagnosi differenziale (Goal: Compare), un layout a due colonne con pulsanti interattivi permette un confronto diretto e dinamico tra TE e Parkinson, il che è cruciale data la frequente confusione diagnostica. Per le terapie (Goal: Organize/Compare), ho usato schede filtrabili per presentare le opzioni in modo strutturato e un grafico a barre per confrontare l'efficacia dei farmaci principali. I diagrammi, come quello del circuito cerebrale, sono realizzati con HTML/CSS (Tailwind) per mantenere la coerenza visiva e la leggerezza. Tutte le scelte sono finalizzate a tradurre il testo del report in elementi visivi e interattivi che guidano l'utente nell'esplorazione del contenuto. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+        .nav-link { transition: all 0.3s ease; }
+        .nav-link.active { color: #0f766e; border-bottom-color: #0f766e; }
+        .nav-link:not(.active):hover { color: #0d9488; border-bottom-color: #ccfbf1; }
+        .content-section { display: none; }
+        .content-section.active { display: block; animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .comparison-card { transition: all 0.3s ease-in-out; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div class="container mx-auto max-w-6xl px-4 py-8">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-teal-800 mb-2">Guida Interattiva al Tremore Essenziale</h1>
+            <p class="text-lg text-slate-600">Esplora la patologia, la diagnosi e le opzioni di trattamento.</p>
+        </header>
+
+        <nav class="sticky top-0 bg-slate-50/80 backdrop-blur-lg z-10 mb-8 border-b border-slate-200">
+            <ul class="flex justify-center items-center space-x-4 sm:space-x-8 text-sm sm:text-base font-medium text-slate-600">
+                <li><a href="#panoramica" class="nav-link active py-4 px-2 border-b-2 border-transparent" onclick="switchTab(event, 'panoramica')">Panoramica</a></li>
+                <li><a href="#comprendere" class="nav-link py-4 px-2 border-b-2 border-transparent" onclick="switchTab(event, 'comprendere')">Comprendere il TE</a></li>
+                <li><a href="#diagnosi" class="nav-link py-4 px-2 border-b-2 border-transparent" onclick="switchTab(event, 'diagnosi')">Diagnosi e Confronti</a></li>
+                <li><a href="#trattamento" class="nav-link py-4 px-2 border-b-2 border-transparent" onclick="switchTab(event, 'trattamento')">Trattamenti</a></li>
+            </ul>
+        </nav>
+
+        <main>
+            <section id="panoramica" class="content-section active">
+                <div class="text-center mb-12">
+                     <h2 class="text-3xl font-bold text-teal-700 mb-4">Cos'è il Tremore Essenziale?</h2>
+                     <p class="max-w-3xl mx-auto text-slate-600 leading-relaxed">
+                        Il Tremore Essenziale (TE) è il più comune disturbo del movimento neurologico, caratterizzato da un tremore involontario e ritmico che si manifesta principalmente durante le azioni volontarie (tremore d'azione) o nel mantenere una posizione (tremore posturale). Sebbene non sia letale, può avere un impatto significativo sulla qualità della vita, rendendo difficili attività quotidiane come scrivere, bere o mangiare. Questa guida interattiva è pensata per esplorare in modo semplice e chiaro i vari aspetti di questa condizione.
+                    </p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-6 text-center">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                        <p class="text-5xl font-bold text-teal-600 mb-3">~0.5%</p>
+                        <h3 class="font-semibold text-slate-700">Prevalenza Globale</h3>
+                        <p class="text-sm text-slate-500">della popolazione generale è affetta da Tremore Essenziale.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                        <p class="text-5xl font-bold text-teal-600 mb-3">1 su 20</p>
+                        <h3 class="font-semibold text-slate-700">Oltre i 40 Anni</h3>
+                        <p class="text-sm text-slate-500">La prevalenza aumenta notevolmente con l'avanzare dell'età.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                        <p class="text-5xl font-bold text-teal-600 mb-3">30-70%</p>
+                        <h3 class="font-semibold text-slate-700">Carattere Familiare</h3>
+                        <p class="text-sm text-slate-500">dei casi presenta una storia familiare positiva, indicando una forte componente genetica.</p>
+                    </div>
+                </div>
+
+                <div class="mt-12 bg-white p-8 rounded-xl shadow-sm border border-slate-100">
+                    <h3 class="text-2xl font-bold text-center text-teal-700 mb-6">Aree del Corpo Tipicamente Coinvolte</h3>
+                     <p class="max-w-3xl mx-auto text-slate-600 leading-relaxed text-center mb-8">
+                        Il tremore colpisce prevalentemente le mani, ma può interessare diverse altre parti del corpo. L'impatto del tremore varia da lievi difficoltà a una significativa disabilità funzionale, a seconda delle aree coinvolte e della gravità.
+                    </p>
+                    <div class="flex flex-wrap justify-center gap-4 text-center">
+                        <div class="bg-teal-50 text-teal-800 font-medium py-2 px-4 rounded-full">Mani e Avambracci (più comune)</div>
+                        <div class="bg-teal-50 text-teal-800 font-medium py-2 px-4 rounded-full">Testa</div>
+                        <div class="bg-teal-50 text-teal-800 font-medium py-2 px-4 rounded-full">Voce</div>
+                        <div class="bg-teal-50 text-teal-800 font-medium py-2 px-4 rounded-full">Mascella e Lingua</div>
+                        <div class="bg-teal-50 text-teal-800 font-medium py-2 px-4 rounded-full">Tronco</div>
+                        <div class="bg-teal-50 text-teal-800 font-medium py-2 px-4 rounded-full">Gambe (meno comune)</div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="comprendere" class="content-section">
+                 <div class="text-center mb-12">
+                     <h2 class="text-3xl font-bold text-teal-700 mb-4">Le Radici del Tremore</h2>
+                     <p class="max-w-3xl mx-auto text-slate-600 leading-relaxed">
+                        Per comprendere il Tremore Essenziale, è utile esplorare chi colpisce, i fattori che possono peggiorarlo e le ipotesi attuali su cosa accade nel cervello. Questa sezione offre una visione d'insieme sull'epidemiologia e sui meccanismi neurobiologici che si ritiene siano alla base del disturbo.
+                    </p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-8 items-start">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                        <h3 class="text-xl font-bold text-teal-700 mb-4 text-center">Prevalenza per Fascia d'Età</h3>
+                        <div class="chart-container relative w-full h-80 max-w-lg mx-auto">
+                            <canvas id="prevalenceChart"></canvas>
+                        </div>
+                        <p class="text-sm text-slate-500 mt-4 text-center">Il grafico illustra come la probabilità di sviluppare il tremore essenziale aumenti con l'età, diventando significativamente più comune dopo i 65 anni. Dati basati su stime epidemiologiche.</p>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                        <h3 class="text-xl font-bold text-teal-700 mb-4 text-center">Fattori Scatenanti e Aggravanti</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-start"><span class="text-teal-500 mr-3 mt-1">&#10003;</span><span><strong class="font-semibold">Stress ed Emozioni Intense:</strong> L'ansia e la tensione possono aumentare l'ampiezza del tremore.</span></li>
+                            <li class="flex items-start"><span class="text-teal-500 mr-3 mt-1">&#10003;</span><span><strong class="font-semibold">Affaticamento Fisico:</strong> La stanchezza può peggiorare i sintomi.</span></li>
+                            <li class="flex items-start"><span class="text-teal-500 mr-3 mt-1">&#10003;</span><span><strong class="font-semibold">Caffeina e Stimolanti:</strong> Sostanze come la caffeina possono esacerbare il tremore.</span></li>
+                            <li class="flex items-start"><span class="text-teal-500 mr-3 mt-1">&#10003;</span><span><strong class="font-semibold">Alcuni Farmaci:</strong> Antidepressivi, farmaci per l'asma e altri possono indurre o peggiorare il tremore.</span></li>
+                            <li class="flex items-start"><span class="text-teal-500 mr-3 mt-1">&#10003;</span><span><strong class="font-semibold">Temperature Estreme:</strong> Sia il caldo che il freddo intenso possono avere un impatto.</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="mt-8 bg-white p-8 rounded-xl shadow-sm border border-slate-100">
+                    <h3 class="text-2xl font-bold text-center text-teal-700 mb-6">Cosa Succede nel Cervello? Il Circuito del Tremore</h3>
+                    <p class="text-center max-w-3xl mx-auto text-slate-600 mb-8">Sebbene la causa esatta sia sconosciuta, la ricerca suggerisce che il TE nasca da una comunicazione anomala in un circuito cerebrale specifico che coinvolge il cervelletto. Si pensa che una disfunzione nel sistema del neurotrasmettitore GABA (un "freno" naturale del cervello) porti a un'iperattività di questa rete, generando il tremore.</p>
+                    <div class="flex flex-col md:flex-row justify-center items-center gap-2 md:gap-4 font-medium text-center">
+                        <div class="bg-sky-100 text-sky-800 p-4 rounded-lg w-full md:w-auto">Corteccia Motoria</div>
+                        <div class="text-2xl text-slate-400">&rarr;</div>
+                        <div class="bg-sky-100 text-sky-800 p-4 rounded-lg w-full md:w-auto">Talamo</div>
+                        <div class="text-2xl text-slate-400">&rarr;</div>
+                        <div class="bg-red-100 text-red-800 p-4 rounded-lg border-2 border-red-300 w-full md:w-auto">Cervelletto (Disfunzione)</div>
+                    </div>
+                     <p class="text-sm text-slate-500 mt-4 text-center">Questo diagramma semplificato illustra il circuito cerebello-talamo-corticale. Un'attività anomala, in particolare a livello del cervelletto, si propaga attraverso il circuito, causando il tremore.</p>
+                </div>
+            </section>
+
+            <section id="diagnosi" class="content-section">
+                <div class="text-center mb-12">
+                     <h2 class="text-3xl font-bold text-teal-700 mb-4">Come si Arriva a una Diagnosi</h2>
+                     <p class="max-w-3xl mx-auto text-slate-600 leading-relaxed">
+                        La diagnosi di Tremore Essenziale è principalmente clinica, basata sull'anamnesi e su un attento esame neurologico. Non esistono esami del sangue o di imaging definitivi. Una parte fondamentale del processo diagnostico è escludere altre condizioni, in particolare la Malattia di Parkinson, con cui il TE è spesso confuso.
+                    </p>
+                </div>
+
+                <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-100">
+                    <h3 class="text-2xl font-bold text-center text-teal-700 mb-6">Tremore Essenziale vs. Malattia di Parkinson</h3>
+                    <p class="text-center max-w-3xl mx-auto text-slate-600 mb-8">Usa i pulsanti sottostanti per confrontare le caratteristiche chiave di queste due diverse condizioni.</p>
+                    
+                    <div class="flex justify-center space-x-2 mb-8">
+                        <button class="bg-teal-600 text-white py-2 px-4 rounded-md text-sm font-semibold" onclick="showComparison('te', this)">Solo TE</button>
+                        <button class="bg-slate-200 text-slate-700 py-2 px-4 rounded-md text-sm font-semibold" onclick="showComparison('pd', this)">Solo Parkinson</button>
+                        <button class="bg-slate-200 text-slate-700 py-2 px-4 rounded-md text-sm font-semibold" onclick="showComparison('both', this)">Confronta</button>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div id="te-card" class="comparison-card bg-teal-50 p-6 rounded-lg border border-teal-200">
+                            <h4 class="text-xl font-bold text-teal-800 mb-4">Tremore Essenziale</h4>
+                            <ul class="space-y-3 text-slate-700">
+                                <li><strong class="font-semibold">Tipo di Tremore:</strong> D'azione e posturale (durante il movimento).</li>
+                                <li><strong class="font-semibold">Parti Coinvolte:</strong> Mani, testa, voce. Raro alle gambe.</li>
+                                <li><strong class="font-semibold">Simmetria:</strong> Tipicamente bilaterale (entrambi i lati).</li>
+                                <li><strong class="font-semibold">Altri Sintomi:</strong> Generalmente assenti (no rigidità o lentezza).</li>
+                                <li><strong class="font-semibold">Risposta all'Alcol:</strong> Spesso migliora temporaneamente.</li>
+                                 <li><strong class="font-semibold">Scrittura:</strong> Grande e tremolante.</li>
+                            </ul>
+                        </div>
+                        <div id="pd-card" class="comparison-card bg-indigo-50 p-6 rounded-lg border border-indigo-200">
+                            <h4 class="text-xl font-bold text-indigo-800 mb-4">Malattia di Parkinson</h4>
+                            <ul class="space-y-3 text-slate-700">
+                                <li><strong class="font-semibold">Tipo di Tremore:</strong> A riposo (quando il muscolo è rilassato).</li>
+                                <li><strong class="font-semibold">Parti Coinvolte:</strong> Mani, gambe, mento. Raro alla testa.</li>
+                                <li><strong class="font-semibold">Simmetria:</strong> Inizia unilateralmente (un lato) e rimane asimmetrico.</li>
+                                <li><strong class="font-semibold">Altri Sintomi:</strong> Rigidità, lentezza dei movimenti (bradicinesia), instabilità.</li>
+                                <li><strong class="font-semibold">Risposta all'Alcol:</strong> Nessun miglioramento significativo.</li>
+                                <li><strong class="font-semibold">Scrittura:</strong> Piccola e stretta (micrografia).</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="trattamento" class="content-section">
+                <div class="text-center mb-12">
+                     <h2 class="text-3xl font-bold text-teal-700 mb-4">Gestire il Tremore: Le Opzioni</h2>
+                     <p class="max-w-3xl mx-auto text-slate-600 leading-relaxed">
+                       Attualmente non esiste una cura per il Tremore Essenziale, ma sono disponibili diverse opzioni terapeutiche per gestire i sintomi e migliorare la qualità della vita. Il trattamento è personalizzato e dipende dalla gravità del tremore e dal suo impatto sulle attività quotidiane. Le opzioni vanno dai farmaci a terapie non invasive, fino alla chirurgia per i casi più severi.
+                    </p>
+                </div>
+
+                <div class="mb-8">
+                    <div class="flex flex-wrap justify-center gap-2 mb-8 border-b border-slate-200 pb-4">
+                        <button class="treatment-tab-btn active bg-teal-600 text-white py-2 px-5 rounded-full text-sm font-semibold" onclick="filterTreatments('all', this)">Tutti</button>
+                        <button class="treatment-tab-btn bg-white text-slate-600 py-2 px-5 rounded-full text-sm font-semibold border" onclick="filterTreatments('farmaci', this)">Farmaci</button>
+                        <button class="treatment-tab-btn bg-white text-slate-600 py-2 px-5 rounded-full text-sm font-semibold border" onclick="filterTreatments('terapie', this)">Terapie e Stile di Vita</button>
+                        <button class="treatment-tab-btn bg-white text-slate-600 py-2 px-5 rounded-full text-sm font-semibold border" onclick="filterTreatments('chirurgia', this)">Chirurgia</button>
+                    </div>
+
+                    <div id="treatment-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="treatment-card bg-white p-6 rounded-xl shadow-sm border border-slate-100" data-category="farmaci">
+                            <h4 class="font-bold text-lg text-teal-800">Propranololo</h4>
+                            <span class="text-xs font-medium bg-blue-100 text-blue-800 py-0.5 px-2 rounded-full">Prima Linea</span>
+                            <p class="text-slate-600 mt-2 text-sm">Beta-bloccante che riduce l'ampiezza del tremore. Efficacia stimata nel 40-60% dei pazienti.</p>
+                        </div>
+                         <div class="treatment-card bg-white p-6 rounded-xl shadow-sm border border-slate-100" data-category="farmaci">
+                            <h4 class="font-bold text-lg text-teal-800">Primidone</h4>
+                            <span class="text-xs font-medium bg-blue-100 text-blue-800 py-0.5 px-2 rounded-full">Prima Linea</span>
+                            <p class="text-slate-600 mt-2 text-sm">Farmaco anticonvulsivante molto efficace, con risposta positiva nel 60-100% dei casi. Richiede un inizio graduale.</p>
+                        </div>
+                        <div class="treatment-card bg-white p-6 rounded-xl shadow-sm border border-slate-100" data-category="farmaci">
+                            <h4 class="font-bold text-lg text-teal-800">Tossina Botulinica</h4>
+                            <span class="text-xs font-medium bg-gray-100 text-gray-800 py-0.5 px-2 rounded-full">Altro</span>
+                            <p class="text-slate-600 mt-2 text-sm">Iniezioni utili per tremori specifici (testa, voce). L'effetto dura circa 3 mesi. Può causare debolezza locale.</p>
+                        </div>
+                        <div class="treatment-card bg-white p-6 rounded-xl shadow-sm border border-slate-100" data-category="terapie">
+                            <h4 class="font-bold text-lg text-teal-800">Terapia Occupazionale</h4>
+                            <p class="text-slate-600 mt-2 text-sm">Aiuta ad adattarsi alla vita con il tremore, suggerendo strategie e dispositivi ausiliari (es. posate pesanti, pesi da polso).</p>
+                        </div>
+                         <div class="treatment-card bg-white p-6 rounded-xl shadow-sm border border-slate-100" data-category="terapie">
+                            <h4 class="font-bold text-lg text-teal-800">Modifiche Stile di Vita</h4>
+                            <p class="text-slate-600 mt-2 text-sm">Evitare caffeina e stress, imparare tecniche di rilassamento. L'uso moderato di alcol può dare un sollievo temporaneo.</p>
+                        </div>
+                        <div class="treatment-card bg-white p-6 rounded-xl shadow-sm border border-slate-100" data-category="chirurgia">
+                            <h4 class="font-bold text-lg text-teal-800">Stimolazione Cerebrale Profonda (DBS)</h4>
+                            <p class="text-slate-600 mt-2 text-sm">Impianto di un elettrodo nel talamo che, tramite impulsi elettrici, blocca i segnali che causano il tremore. È reversibile e regolabile.</p>
+                        </div>
+                        <div class="treatment-card bg-white p-6 rounded-xl shadow-sm border border-slate-100" data-category="chirurgia">
+                            <h4 class="font-bold text-lg text-teal-800">Ultrasuoni Focalizzati (MRgFUS)</h4>
+                            <p class="text-slate-600 mt-2 text-sm">Procedura non invasiva che usa ultrasuoni guidati da risonanza magnetica per creare una piccola lesione nel talamo e interrompere il tremore.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                    <h3 class="text-xl font-bold text-teal-700 mb-4 text-center">Efficacia Comparata dei Farmaci di Prima Linea</h3>
+                    <div class="chart-container relative w-full h-60 max-w-lg mx-auto">
+                        <canvas id="efficacyChart"></canvas>
+                    </div>
+                    <p class="text-sm text-slate-500 mt-4 text-center">Questo grafico mostra il range di efficacia riportato per i due principali farmaci usati nel trattamento del Tremore Essenziale. La risposta individuale può variare.</p>
+                </div>
+
+            </section>
+        </main>
+
+    </div>
+
+    <footer class="text-center py-6 border-t border-slate-200 mt-12">
+        <p class="text-sm text-slate-500">Questa guida interattiva è solo a scopo informativo e non sostituisce il parere medico. Consultare sempre un professionista sanitario per diagnosi e trattamento.</p>
+    </footer>
+
+    <script>
+        const contentSections = document.querySelectorAll('.content-section');
+        const navLinks = document.querySelectorAll('.nav-link');
+        let prevalenceChartInstance;
+        let efficacyChartInstance;
+
+        function switchTab(event, tabId) {
+            event.preventDefault();
+            
+            contentSections.forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(tabId).classList.add('active');
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            if (tabId === 'comprendere' && !prevalenceChartInstance) {
+                createPrevalenceChart();
+            }
+            if (tabId === 'trattamento' && !efficacyChartInstance) {
+                createEfficacyChart();
+            }
+        }
+
+        function showComparison(view, clickedButton = null) {
+            const teCard = document.getElementById('te-card');
+            const pdCard = document.getElementById('pd-card');
+            const buttons = document.querySelectorAll('#diagnosi button');
+
+            buttons.forEach(button => {
+                button.classList.remove('bg-teal-600', 'text-white');
+                button.classList.add('bg-slate-200', 'text-slate-700');
+            });
+
+            let targetButton;
+            if (clickedButton) {
+                targetButton = clickedButton;
+            } else {
+                // Find the button based on the 'view' when called without a direct click event
+                if (view === 'te') {
+                    targetButton = buttons[0]; // "Solo TE" button
+                } else if (view === 'pd') {
+                    targetButton = buttons[1]; // "Solo Parkinson" button
+                } else { // 'both'
+                    targetButton = buttons[2]; // "Confronta" button
+                }
+            }
+
+            if (view === 'te') {
+                teCard.style.opacity = '1';
+                teCard.style.transform = 'scale(1)';
+                pdCard.style.opacity = '0.2';
+                pdCard.style.transform = 'scale(0.95)';
+            } else if (view === 'pd') {
+                teCard.style.opacity = '0.2';
+                teCard.style.transform = 'scale(0.95)';
+                pdCard.style.opacity = '1';
+                pdCard.style.transform = 'scale(1)';
+            } else { // 'both'
+                teCard.style.opacity = '1';
+                teCard.style.transform = 'scale(1)';
+                pdCard.style.opacity = '1';
+                pdCard.style.transform = 'scale(1)';
+            }
+
+            if (targetButton) {
+                targetButton.classList.add('bg-teal-600', 'text-white');
+            }
+        }
+        
+        function filterTreatments(category, btn) {
+            const cards = document.querySelectorAll('.treatment-card');
+            const buttons = document.querySelectorAll('.treatment-tab-btn');
+
+            buttons.forEach(button => {
+                button.classList.remove('active', 'bg-teal-600', 'text-white');
+                button.classList.add('bg-white', 'text-slate-600', 'border');
+            });
+
+            btn.classList.add('active', 'bg-teal-600', 'text-white');
+            btn.classList.remove('bg-white', 'text-slate-600', 'border');
+
+            cards.forEach(card => {
+                if (category === 'all' || card.dataset.category === category) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+        
+        function createPrevalenceChart() {
+            const ctx = document.getElementById('prevalenceChart').getContext('2d');
+            prevalenceChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Pop. Generale', '40-50 anni', 'Oltre 65 anni'],
+                    datasets: [{
+                        label: 'Prevalenza Stimata (%)',
+                        data: [0.5, 5, 20],
+                        backgroundColor: 'rgba(15, 118, 110, 0.6)',
+                        borderColor: 'rgba(15, 118, 110, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                             ticks: { color: '#475569' },
+                             grid: { color: '#e2e8f0' }
+                        },
+                        x: {
+                            ticks: { color: '#475569' },
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#0f766e',
+                            titleFont: { weight: 'bold' },
+                            callbacks: {
+                                label: function(context) {
+                                    return ` Prevalenza: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createEfficacyChart() {
+             const ctx = document.getElementById('efficacyChart').getContext('2d');
+             efficacyChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Propranololo', 'Primidone'],
+                    datasets: [{
+                        label: 'Efficacia (% di pazienti con miglioramento)',
+                        data: [[40, 60], [60, 100]],
+                        backgroundColor: ['rgba(2, 132, 199, 0.6)', 'rgba(79, 70, 229, 0.6)'],
+                        borderColor: ['rgba(2, 132, 199, 1)', 'rgba(79, 70, 229, 1)'],
+                        borderWidth: 1,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                     scales: {
+                        x: {
+                             min: 0,
+                             max: 100,
+                             ticks: { color: '#475569', callback: (value) => value + '%' },
+                             grid: { color: '#e2e8f0' }
+                        },
+                        y: {
+                            ticks: { color: '#475569' },
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#0f766e',
+                            titleFont: { weight: 'bold' },
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.raw;
+                                    return ` Efficacia: ${value[0]}% - ${value[1]}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('panoramica').classList.add('active');
+            // Find the "Confronta" button and pass it to showComparison
+            const compareButton = document.querySelector('#diagnosi button:nth-child(3)');
+            showComparison('both', compareButton); 
+        });
+
+    </script>
+</body>
+</html>
