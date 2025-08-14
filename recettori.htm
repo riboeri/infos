@@ -2,116 +2,153 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Affinità Recettoriale Antipsicotici Atipici</title>
+    <title>Grafico a Ragnatela - Affinità Recettoriale Antipsicotici</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
+            text-align: center;
         }
-        .chart-container {
+        .container {
             max-width: 900px;
             margin: 0 auto;
         }
+        canvas {
+            margin-top: 20px;
+        }
+        select {
+            font-size: 16px;
+            padding: 8px;
+            width: 300px;
+            margin-bottom: 20px;
+        }
         h1 {
-            text-align: center;
             color: #333;
         }
     </style>
 </head>
 <body>
-    <h1>Affinità Recettoriale degli Antipsicotici Atipici</h1>
-    <div class="chart-container">
-        <canvas id="receptorChart"></canvas>
+    <div class="container">
+        <h1>Affinità Recettoriale degli Antipsicotici Atipici</h1>
+        <label for="antipsicoticoSelect">Scegli un antipsicotico: </label>
+        <select id="antipsicoticoSelect"></select>
+        <canvas id="radarChart"></canvas>
     </div>
 
     <script>
-        // Dati di affinità approssimativa (in % di occupazione recettoriale a dosi terapeutiche medie)
-        // Fonte: dati sintetizzati da letteratura farmacologica (es. Kapur, Seeman, Meltzer)
-        const antipsicotici = [
-            'Clozapina',
-            'Olanzapina',
-            'Quetiapina',
-            'Risperidone',
-            'Paliperidone',
-            'Aripiprazolo',
-            'Brexpiprazolo',
-            'Cariprazina',
-            'Ziprasidone',
-            'Lurasidone',
-            'Iloperidone'
-        ];
+        // Etichette dei recettori
+        const recettori = ['D2', '5HT2A', 'H1', 'M1', 'α1'];
 
-        const dati = {
-            D2: [40, 65, 50, 75, 80, 60, 45, 60, 70, 75, 65], // Recettori D2 (dopamina)
-            5HT2A: [95, 90, 85, 98, 99, 90, 95, 98, 97, 99, 90], // Recettori 5-HT2A (serotonina)
-            H1: [90, 95, 95, 70, 65, 20, 30, 25, 50, 60, 85], // Recettori H1 (istamina)
-            M1: [70, 80, 85, 40, 35, 15, 20, 10, 30, 35, 60], // Recettori muscarinici
-            α1: [85, 90, 80, 90, 85, 40, 50, 45, 60, 70, 95]  // Recettori alfa-1 (adrenergici)
+        // Dati di affinità approssimativa (% di occupazione recettoriale)
+        const datiAntipsicotici = {
+            'Clozapina': [40, 95, 90, 70, 85],
+            'Olanzapina': [65, 90, 95, 80, 90],
+            'Quetiapina': [50, 85, 95, 85, 80],
+            'Risperidone': [75, 98, 70, 40, 90],
+            'Paliperidone': [80, 99, 65, 35, 85],
+            'Aripiprazolo': [60, 90, 20, 15, 40],
+            'Brexpiprazolo': [45, 95, 30, 20, 50],
+            'Cariprazina': [60, 98, 25, 10, 45],
+            'Ziprasidone': [70, 97, 50, 30, 60],
+            'Lurasidone': [75, 99, 60, 35, 70],
+            'Iloperidone': [65, 90, 85, 60, 95]
         };
 
-        // Colori per i recettori
+        // Colori per ogni antipsicotico (tonalità diverse)
         const colori = {
-            D2: 'rgba(255, 99, 132, 0.7)',
-            '5HT2A': 'rgba(54, 162, 235, 0.7)',
-            H1: 'rgba(255, 206, 86, 0.7)',
-            M1: 'rgba(75, 192, 192, 0.7)',
-            α1: 'rgba(153, 102, 255, 0.7)'
+            'Clozapina': 'rgba(255, 99, 132, 0.7)',
+            'Olanzapina': 'rgba(54, 162, 235, 0.7)',
+            'Quetiapina': 'rgba(255, 206, 86, 0.7)',
+            'Risperidone': 'rgba(75, 192, 192, 0.7)',
+            'Paliperidone': 'rgba(153, 102, 255, 0.7)',
+            'Aripiprazolo': 'rgba(255, 159, 64, 0.7)',
+            'Brexpiprazolo': 'rgba(199, 199, 199, 0.7)',
+            'Cariprazina': 'rgba(83, 102, 255, 0.7)',
+            'Ziprasidone': 'rgba(255, 99, 255, 0.7)',
+            'Lurasidone': 'rgba(102, 255, 102, 0.7)',
+            'Iloperidone': 'rgba(255, 140, 0, 0.7)'
         };
 
-        // Preparazione dati per Chart.js
-        const datasets = Object.keys(dati).map((recettore, index) => ({
-            label: recettore,
-            data: dati[recettore],
-            backgroundColor: Object.values(colori)[index],
-            borderColor: Object.values(colori)[index].replace('0.7', '1'),
-            borderWidth: 1
-        }));
+        // Popola il menu a tendina
+        const select = document.getElementById('antipsicoticoSelect');
+        Object.keys(datiAntipsicotici).forEach(nome => {
+            const option = document.createElement('option');
+            option.value = nome;
+            option.textContent = nome;
+            select.appendChild(option);
+        });
 
-        // Creazione del grafico a barre raggruppate
-        const ctx = document.getElementById('receptorChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
+        // Configurazione del grafico radar
+        const ctx = document.getElementById('radarChart').getContext('2d');
+        let radarChart = new Chart(ctx, {
+            type: 'radar',
             data: {
-                labels: antipsicotici,
-                datasets: datasets
+                labels: recettori,
+                datasets: [{
+                    label: '',
+                     data: [],
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(255, 99, 132, 1)'
+                }]
             },
             options: {
                 responsive: true,
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Affinità recettoriale (%) degli antipsicotici atipici'
+                        text: 'Affinità recettoriale per antipsicotico selezionato'
                     },
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                return `${context.dataset.label}: ${context.raw}%`;
+                                return `${context.parsed.r}% di affinità`;
                             }
                         }
                     }
                 },
                 scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Antipsicotici Atipici'
-                        }
-                    },
-                    y: {
-                        title: {
-                            display: true,
-                            text: 'Affinità Recettoriale (%)'
-                        },
+                    r: {
                         min: 0,
                         max: 100,
+                        angleLines: { display: true },
+                        pointLabels: {
+                            color: '#000',
+                            font: {
+                                size: 14
+                            }
+                        },
                         ticks: {
-                            stepSize: 10
+                            stepSize: 20,
+                            backdropColor: 'rgba(255, 255, 255, 0.8)'
                         }
                     }
                 }
             }
         });
+
+        // Aggiorna il grafico quando si cambia l'antipsicotico
+        select.addEventListener('change', function () {
+            const nome = this.value;
+            const dati = datiAntipsicotici[nome];
+            const colore = colori[nome];
+
+            radarChart.data.datasets[0].label = nome;
+            radarChart.data.datasets[0].data = dati;
+            radarChart.data.datasets[0].backgroundColor = colore.replace('0.7', '0.2');
+            radarChart.data.datasets[0].borderColor = colore;
+            radarChart.data.datasets[0].pointBackgroundColor = colore;
+            radarChart.options.plugins.title.text = `Affinità recettoriale: ${nome}`;
+            radarChart.update();
+        });
+
+        // Inizializza con il primo antipsicotico
+        window.onload = function () {
+            select.value = 'Clozapina';
+            select.dispatchEvent(new Event('change'));
+        };
     </script>
 </body>
 </html>
