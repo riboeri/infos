@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Affinità Recettoriale Antipsicotici Atipici</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .chart-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Affinità Recettoriale degli Antipsicotici Atipici</h1>
+    <div class="chart-container">
+        <canvas id="receptorChart"></canvas>
+    </div>
+
+    <script>
+        // Dati di affinità approssimativa (in % di occupazione recettoriale a dosi terapeutiche medie)
+        // Fonte: dati sintetizzati da letteratura farmacologica (es. Kapur, Seeman, Meltzer)
+        const antipsicotici = [
+            'Clozapina',
+            'Olanzapina',
+            'Quetiapina',
+            'Risperidone',
+            'Paliperidone',
+            'Aripiprazolo',
+            'Brexpiprazolo',
+            'Cariprazina',
+            'Ziprasidone',
+            'Lurasidone',
+            'Iloperidone'
+        ];
+
+        const dati = {
+            D2: [40, 65, 50, 75, 80, 60, 45, 60, 70, 75, 65], // Recettori D2 (dopamina)
+            5HT2A: [95, 90, 85, 98, 99, 90, 95, 98, 97, 99, 90], // Recettori 5-HT2A (serotonina)
+            H1: [90, 95, 95, 70, 65, 20, 30, 25, 50, 60, 85], // Recettori H1 (istamina)
+            M1: [70, 80, 85, 40, 35, 15, 20, 10, 30, 35, 60], // Recettori muscarinici
+            α1: [85, 90, 80, 90, 85, 40, 50, 45, 60, 70, 95]  // Recettori alfa-1 (adrenergici)
+        };
+
+        // Colori per i recettori
+        const colori = {
+            D2: 'rgba(255, 99, 132, 0.7)',
+            '5HT2A': 'rgba(54, 162, 235, 0.7)',
+            H1: 'rgba(255, 206, 86, 0.7)',
+            M1: 'rgba(75, 192, 192, 0.7)',
+            α1: 'rgba(153, 102, 255, 0.7)'
+        };
+
+        // Preparazione dati per Chart.js
+        const datasets = Object.keys(dati).map((recettore, index) => ({
+            label: recettore,
+            data: dati[recettore],
+            backgroundColor: Object.values(colori)[index],
+            borderColor: Object.values(colori)[index].replace('0.7', '1'),
+            borderWidth: 1
+        }));
+
+        // Creazione del grafico a barre raggruppate
+        const ctx = document.getElementById('receptorChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: antipsicotici,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Affinità recettoriale (%) degli antipsicotici atipici'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: ${context.raw}%`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Antipsicotici Atipici'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Affinità Recettoriale (%)'
+                        },
+                        min: 0,
+                        max: 100,
+                        ticks: {
+                            stepSize: 10
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
