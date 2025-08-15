@@ -2,71 +2,131 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Affinità Recettoriale Antipsicotici</title>
+    <!-- Tailwind CSS CDN per una rapida stilizzazione -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Script di Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* Stili personalizzati per l'applicazione */
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            text-align: center;
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
         }
         .container {
-            max-width: 800px;
-            margin: 0 auto;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 24px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
             align-items: center;
         }
+        h1 {
+            color: #1f2937;
+            font-size: 1.875rem; /* text-3xl */
+            font-weight: 700; /* font-bold */
+            margin-bottom: 20px;
+        }
         .controls {
             width: 100%;
-            text-align: center;
-            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
         }
         label {
-            font-size: 14px;
-            margin-right: 5px;
+            font-size: 0.875rem; /* text-sm */
+            color: #4b5563;
+            margin-bottom: 8px;
         }
         select {
-            font-size: 14px;
-            padding: 6px;
-            width: 200px;
+            font-size: 0.875rem; /* text-sm */
+            padding: 8px 12px;
+            width: 100%;
+            max-width: 250px;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            background-color: #f9fafb;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
         }
         .content {
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
             justify-content: center;
-            align-items: flex-start;
-            gap: 20px;
-            flex-wrap: wrap;
+            align-items: center;
+            gap: 24px;
+            width: 100%;
         }
         .table-container {
-            flex: 1;
-            max-width: 200px;
+            width: 100%;
+            max-width: 300px;
             text-align: left;
-            margin-top: 10px;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 14px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
         }
         table th, table td {
-            border: 1px solid #ccc;
-            padding: 6px;
+            padding: 12px;
             text-align: center;
+            border: 1px solid #e5e7eb;
         }
         table th {
-            background-color: #f4f4f4;
+            background-color: #f9fafb;
+            color: #1f2937;
+            font-weight: 600;
+        }
+        table td {
+            background-color: #ffffff;
         }
         .chart-wrapper {
-            width: 300px;
-            height: 300px;
-            margin-top: 10px;
+            width: 100%;
+            max-width: 400px;
         }
-        h1 {
-            color: #333;
-            font-size: 1.4em;
-            margin-bottom: 10px;
+        .effects-table-container {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+        .effects-table-container table {
+            text-align: left;
+            font-size: 0.75rem; /* text-xs */
+        }
+        .effects-table-container table th,
+        .effects-table-container table td {
+            padding: 8px;
+        }
+        .effects-table-container table td:last-child {
+            text-align: left;
+        }
+        /* Media query per layout desktop */
+        @media (min-width: 768px) {
+            .controls {
+                flex-direction: row;
+                justify-content: center;
+                gap: 16px;
+            }
+            label {
+                margin-bottom: 0;
+            }
+            .content {
+                flex-direction: row;
+                align-items: flex-start;
+                justify-content: space-around;
+            }
+            .effects-table-container {
+                margin-top: 0;
+            }
         }
     </style>
 </head>
@@ -75,11 +135,45 @@
         <h1>Affinità Recettoriale Antipsicotici</h1>
         
         <div class="controls">
-            <label for="antipsicoticoSelect">Scegli un antipsicotico: </label>
+            <label for="antipsicoticoSelect">Scegli un antipsicotico:</label>
             <select id="antipsicoticoSelect"></select>
         </div>
 
         <div class="content">
+            <!-- Tabella Effetti del Blocco spostata a sinistra -->
+            <div class="effects-table-container">
+                <table id="effectsTable">
+                    <thead>
+                        <tr>
+                            <th>Recettore</th>
+                            <th>Effetto del blocco</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>D2</td>
+                            <td>Riduzione sintomi positivi, ma può causare sintomi extrapiramidali (EPS).</td>
+                        </tr>
+                        <tr>
+                            <td>5HT2A</td>
+                            <td>Mitigazione effetti collaterali extrapiramidali e miglioramento sintomi negativi/cognitivi.</td>
+                        </tr>
+                        <tr>
+                            <td>H1</td>
+                            <td>Sedazione, sonnolenza, aumento dell'appetito e del peso.</td>
+                        </tr>
+                        <tr>
+                            <td>M1</td>
+                            <td>Effetti anticolinergici (secchezza delle fauci, visione offuscata, stipsi).</td>
+                        </tr>
+                        <tr>
+                            <td>α1</td>
+                            <td>Ipotensione ortostatica, vertigini, sonnolenza.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
             <!-- Tabella affinità -->
             <div class="table-container">
                 <table id="affinityTable">
@@ -154,7 +248,7 @@
                 labels: recettori,
                 datasets: [{
                     label: '',
-                    data: [],  // ✅ CORRETTO: `data: []`
+                    data: [],
                     backgroundColor: 'rgba(255, 99, 132, 0.2)',
                     borderColor: 'rgba(255, 99, 132, 1)',
                     borderWidth: 2,
@@ -183,7 +277,8 @@
                     r: {
                         min: 0,
                         max: 100,
-                        angleLines: { display: true },
+                        angleLines: { display: true, color: 'rgba(0, 0, 0, 0.1)' },
+                        grid: { color: 'rgba(0, 0, 0, 0.1)' },
                         pointLabels: { color: '#000', font: { size: 12 } },
                         ticks: { display: false }
                     }
