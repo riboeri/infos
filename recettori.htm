@@ -62,4 +62,106 @@
             'Cariprazina': [60, 98, 25, 10, 45],
             'Ziprasidone': [70, 97, 50, 30, 60],
             'Lurasidone': [75, 99, 60, 35, 70],
-            'Iloperidone': [65, 90
+            'Iloperidone': [65, 90, 85, 60, 95]
+        };
+
+        const colori = {
+            'Clozapina': 'rgba(255, 99, 132, 0.7)',
+            'Olanzapina': 'rgba(54, 162, 235, 0.7)',
+            'Quetiapina': 'rgba(255, 206, 86, 0.7)',
+            'Risperidone': 'rgba(75, 192, 192, 0.7)',
+            'Paliperidone': 'rgba(153, 102, 255, 0.7)',
+            'Aripiprazolo': 'rgba(255, 159, 64, 0.7)',
+            'Brexpiprazolo': 'rgba(199, 199, 199, 0.7)',
+            'Cariprazina': 'rgba(83, 102, 255, 0.7)',
+            'Ziprasidone': 'rgba(255, 99, 255, 0.7)',
+            'Lurasidone': 'rgba(102, 255, 102, 0.7)',
+            'Iloperidone': 'rgba(255, 140, 0, 0.7)'
+        };
+
+        // Popola il selettore
+        const select = document.getElementById('antipsicoticoSelect');
+        Object.keys(datiAntipsicotici).forEach(nome => {
+            const option = document.createElement('option');
+            option.value = nome;
+            option.textContent = nome;
+            select.appendChild(option);
+        });
+
+        // Configura il grafico
+        const ctx = document.getElementById('radarChart').getContext('2d');
+        const radarChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: recettori,
+                datasets: [{
+                    label: 'Affinità (%)',
+                    data: [], // verrà riempito dopo
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(255, 99, 132, 1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, // fondamentale per ridimensionare
+                plugins: {
+                    legend: {
+                        display: false // nascondi legenda per risparmiare spazio
+                    },
+                    title: {
+                        display: true,
+                        text: 'Affinità recettoriale',
+                        font: { size: 14 }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.parsed.r}% di affinità`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    r: {
+                        min: 0,
+                        max: 100,
+                        angleLines: { display: true },
+                        pointLabels: {
+                            color: '#000',
+                            font: { size: 12 }
+                        },
+                        ticks: {
+                            display: false // nascondi i numeri per pulizia
+                        }
+                    }
+                }
+            }
+        });
+
+        // Aggiorna il grafico quando si cambia farmaco
+        select.addEventListener('change', function () {
+            const nome = this.value;
+            const dati = datiAntipsicotici[nome];
+            const colore = colori[nome];
+
+            const dataset = radarChart.data.datasets[0];
+            dataset.data = dati;
+            dataset.backgroundColor = colore.replace('0.7', '0.2');
+            dataset.borderColor = colore;
+            dataset.pointBackgroundColor = colore;
+
+            radarChart.data.datasets[0].label = nome;
+            radarChart.options.plugins.title.text = nome;
+            radarChart.update();
+        });
+
+        // Inizializza con Clozapina
+        window.onload = function () {
+            select.value = 'Clozapina';
+            select.dispatchEvent(new Event('change'));
+        };
+    </script>
+</body>
+</html>
