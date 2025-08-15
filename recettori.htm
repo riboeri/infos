@@ -88,6 +88,7 @@
         }
         table td {
             background-color: #ffffff;
+            transition: background-color 0.5s ease-in-out;
         }
         .chart-wrapper {
             width: 100%;
@@ -231,6 +232,14 @@
             'Iloperidone': 'rgba(255, 140, 0, 0.7)'
         };
 
+        // Funzione per calcolare la tonalità di rosso in base al valore
+        function getRedShade(value) {
+            const hue = 0; // Rosso
+            const saturation = 100; // Saturazione piena
+            const lightness = 100 - (value * 0.5); // La luminosità diminuisce all'aumentare del valore
+            return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+        }
+
         // Popola il selettore
         const select = document.getElementById('antipsicoticoSelect');
         Object.keys(datiAntipsicotici).forEach(nome => {
@@ -291,9 +300,12 @@
             const dati = datiAntipsicotici[nome];
             const colore = colori[nome];
 
-            // Aggiorna tabella
+            // Aggiorna tabella e colora le celle
             recettori.forEach((rec, i) => {
-                document.getElementById(rec).textContent = dati[i] + '%';
+                const cell = document.getElementById(rec);
+                const value = dati[i];
+                cell.textContent = value + '%';
+                cell.style.backgroundColor = getRedShade(value);
             });
 
             // Aggiorna grafico
