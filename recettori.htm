@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Grafico a Ragnatela - Affinità Recettoriale</title>
+    <title>Affinità Recettoriale Antipsicotici</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -11,13 +11,16 @@
             text-align: center;
         }
         .container {
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        h1 {
-            color: #333;
-            font-size: 1.4em;
-            margin-bottom: 10px;
+        .controls {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 15px;
         }
         label {
             font-size: 14px;
@@ -27,24 +30,79 @@
             font-size: 14px;
             padding: 6px;
             width: 200px;
-            margin-bottom: 15px;
+        }
+        .content {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .table-container {
+            flex: 1;
+            max-width: 200px;
+            text-align: left;
+            margin-top: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        table th, table td {
+            border: 1px solid #ccc;
+            padding: 6px;
+            text-align: center;
+        }
+        table th {
+            background-color: #f4f4f4;
         }
         .chart-wrapper {
             width: 300px;
             height: 300px;
-            margin: 20px auto;
-            position: relative;
+            margin-top: 10px;
+        }
+        h1 {
+            color: #333;
+            font-size: 1.4em;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Affinità Recettoriale Antipsicotici</h1>
-        <label for="antipsicoticoSelect">Scegli un antipsicotico: </label>
-        <select id="antipsicoticoSelect"></select>
+        
+        <div class="controls">
+            <label for="antipsicoticoSelect">Scegli un antipsicotico: </label>
+            <select id="antipsicoticoSelect"></select>
+        </div>
 
-        <div class="chart-wrapper">
-            <canvas id="radarChart"></canvas>
+        <div class="content">
+            <!-- Tabella affinità -->
+            <div class="table-container">
+                <table id="affinityTable">
+                    <thead>
+                        <tr>
+                            <th>Recettore</th>
+                            <th>Valore (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>D2</td><td id="D2">-</td></tr>
+                        <tr><td>5HT2A</td><td id="5HT2A">-</td></tr>
+                        <tr><td>H1</td><td id="H1">-</td></tr>
+                        <tr><td>M1</td><td id="M1">-</td></tr>
+                        <tr><td>α1</td><td id="α1">-</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Grafico radar -->
+            <div class="chart-wrapper">
+                <canvas id="radarChart"></canvas>
+            </div>
         </div>
     </div>
 
@@ -88,15 +146,15 @@
             select.appendChild(option);
         });
 
-        // Configura il grafico
+        // Grafico radar
         const ctx = document.getElementById('radarChart').getContext('2d');
         const radarChart = new Chart(ctx, {
             type: 'radar',
             data: {
                 labels: recettori,
                 datasets: [{
-                    label: 'Affinità (%)',
-                    data: [], // verrà riempito dopo
+                    label: '',
+                    data: [],  // ✅ CORRETTO: `data: []`
                     backgroundColor: 'rgba(255, 99, 132, 0.2)',
                     borderColor: 'rgba(255, 99, 132, 1)',
                     borderWidth: 2,
@@ -105,14 +163,12 @@
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false, // fondamentale per ridimensionare
+                maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        display: false // nascondi legenda per risparmiare spazio
-                    },
+                    legend: { display: false },
                     title: {
                         display: true,
-                        text: 'Affinità recettoriale',
+                        text: '',
                         font: { size: 14 }
                     },
                     tooltip: {
@@ -128,39 +184,42 @@
                         min: 0,
                         max: 100,
                         angleLines: { display: true },
-                        pointLabels: {
-                            color: '#000',
-                            font: { size: 12 }
-                        },
-                        ticks: {
-                            display: false // nascondi i numeri per pulizia
-                        }
+                        pointLabels: { color: '#000', font: { size: 12 } },
+                        ticks: { display: false }
                     }
                 }
             }
         });
 
-        // Aggiorna il grafico quando si cambia farmaco
-        select.addEventListener('change', function () {
-            const nome = this.value;
+        // Funzione per aggiornare tabella e grafico
+        function aggiornaDati(nome) {
             const dati = datiAntipsicotici[nome];
             const colore = colori[nome];
 
-            const dataset = radarChart.data.datasets[0];
-            dataset.data = dati;
-            dataset.backgroundColor = colore.replace('0.7', '0.2');
-            dataset.borderColor = colore;
-            dataset.pointBackgroundColor = colore;
+            // Aggiorna tabella
+            recettori.forEach((rec, i) => {
+                document.getElementById(rec).textContent = dati[i] + '%';
+            });
 
+            // Aggiorna grafico
+            radarChart.data.datasets[0].data = dati;
             radarChart.data.datasets[0].label = nome;
+            radarChart.data.datasets[0].backgroundColor = colore.replace('0.7', '0.2');
+            radarChart.data.datasets[0].borderColor = colore;
+            radarChart.data.datasets[0].pointBackgroundColor = colore;
             radarChart.options.plugins.title.text = nome;
             radarChart.update();
+        }
+
+        // Evento cambio selezione
+        select.addEventListener('change', function () {
+            aggiornaDati(this.value);
         });
 
-        // Inizializza con Clozapina
+        // Inizializza
         window.onload = function () {
+            aggiornaDati('Clozapina');
             select.value = 'Clozapina';
-            select.dispatchEvent(new Event('change'));
         };
     </script>
 </body>
